@@ -1,3 +1,21 @@
+:root {
+    --bg: #1a1525;
+    --surface: #201c2e;
+    --surface2: #252038;
+    --border: #2e2840;
+    --border2: #3d3560;
+    --purple: #7C6FCD;
+    --glow: #A78BFA;
+    --spark: #C084FC;
+    --green: #34d399;
+    --green-bg: #0d2620;
+    --text: #EDE9FF;
+    --muted: #8b84a8;
+    --dim: #5a5470;
+    --pixel: 'Press Start 2P', monospace;
+    --body: 'Nunito', sans-serif;
+}
+
 *,
 *::before,
 *::after {

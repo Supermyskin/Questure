@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionture - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/landing.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/auth.css">
+</head>
+
+<body>
+    <div class="glow-blob glow-blob-1"></div>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <header>
+        <a href="../index.html" class="header-logo">QUESTIONTURE</a>
+        <div style="display: flex; gap: 10px;">
+            <a href="register.html" class="header-play"><i class="fa-solid fa-trophy"></i> Play now →</a>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <h2 class="auth-title">Create Account</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <input type="text" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" placeholder="Password" required minlength="6" minlength="32">
+            </div>
+            <div class="form-group">
+                <input type="password" placeholder="Comfirm Password" required>
+            </div>
+            <button type="submit" class="btn-primary btn-submit">Register</button>
+        </form>
+        <a href="login.html" class="auth-link">Already have an account? Login</a>
+    </div>
+</body>
+
+</html>
