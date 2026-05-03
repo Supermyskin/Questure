@@ -75,3 +75,24 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.get('/fetch-user-info', async (req, res) => {
+  try {
+    const userId = req.query.userID;
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({
+      name: user.name,
+      email: user.email,
+      xp: user.xp || 0
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
