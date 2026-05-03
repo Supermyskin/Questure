@@ -1,20 +1,31 @@
 {
-  "name": "questure",
+  "name": "docs",
   "version": "1.0.0",
-  "description": "the backend for questure",
-  "homepage": "https://github.com/IT-8-TUES/8B-25-26-Random-Otbor#readme",
-  "bugs": {
-    "url": "https://github.com/IT-8-TUES/8B-25-26-Random-Otbor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/IT-8-TUES/8B-25-26-Random-Otbor.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mockingoose": "^3.0.0",
+    "mongoose": "^9.6.1",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.3",
+    "babel-jest": "^30.3.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

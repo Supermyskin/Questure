@@ -128,3 +128,23 @@ header {
 .header-play:active {
     transform: translateY(1px);
 }
+
+.nav-links {
+    display: flex;
+    gap: 38px;
+    list-style: none;
+}
+
+.nav-links a {
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dim);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--text);
+}

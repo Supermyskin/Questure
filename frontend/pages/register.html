@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/landing.css">
     <link rel="stylesheet" href="../css/shared.css">
     <link rel="stylesheet" href="../css/auth.css">
+    <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -21,6 +22,12 @@
 
     <header>
         <a href="../index.html" class="header-logo">QUESTIONTURE</a>
+        <ul class="nav-links">
+            <li><a href="#home"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#discover"><i class="fa-solid fa-compass"></i> Discover</a></li>
+            <li><a href="#leaderboard"><i class="fa-solid fa-trophy"></i> Leaderboard</a></li>
+            <li><a href="#myquests"><i class="fa-solid fa-scroll"></i> My Quests</a></li>
+        </ul>
         <div style="display: flex; gap: 10px;">
             <a href="register.html" class="header-play"><i class="fa-solid fa-trophy"></i> Play now →</a>
         </div>
@@ -30,21 +37,23 @@
         <h2 class="auth-title">Create Account</h2>
         <form id="register-form">
             <div class="form-group">
-                <input type="text" placeholder="Username" required>
+                <input type="text" id="name_input" placeholder="Username" required>
             </div>
             <div class="form-group">
-                <input type="email" placeholder="Email" required>
+                <input type="email" id="email_input" placeholder="Email" required>
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Password" required minlength="6" minlength="32">
+                <input type="password" id="password" placeholder="Password" required minlength="6">
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Comfirm Password" required>
+                <input type="password" id="confirm_password" placeholder="Confirm Password" required>
             </div>
             <button type="submit" class="btn-primary btn-submit">Register</button>
         </form>
         <a href="login.html" class="auth-link">Already have an account? Login</a>
     </div>
+
+    <script src="../js/register.js"></script>
 </body>
 
 </html>
