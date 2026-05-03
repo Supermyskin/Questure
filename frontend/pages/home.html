@@ -9,8 +9,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../css/landing.css">
     <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/home.css">
     <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
     <script src="../js/auth-guard.js"></script>
     <script src="../js/header-handler.js"></script>
@@ -18,21 +18,63 @@
 </head>
 
 <body>
-    <div class="glow-blob glow-blob-1"></div>
     <div class="glow-blob glow-blob-2"></div>
     <div class="glow-blob glow-blob-3"></div>
 
-    <header>
-        <a href="#" class="header-logo">QUESTIONTURE</a>
-        <div class="header-auth-actions" style="display: flex; gap: 10px;">
-        </div>
-    </header>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-text">QUESTIONTURE</span>
+                <span class="logo-sub">Side quests worth doing</span>
+            </div>
 
-    <section class="hero">
-        <h1 class="hero-title">
-            HOME PAGE HELLO :D
-        </h1>
-    </section>
+            <nav class="sidebar-nav">
+                <span class="nav-section-label">// MAIN</span>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🧭</span> Discover
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚡</span> My Quests
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🗺️</span> Map View
+                </a>
+
+                <span class="nav-section-label">// SOCIAL</span>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span> Squad
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🏆</span> Leaderboard
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📸</span> Gallery
+                </a>
+
+                <span class="nav-section-label">// YOU</span>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👤</span> Profile
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span> Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="profile-row">
+                    <div class="profile-avatar">😭🙏</div>
+                    <div class="profile-info">
+                        <div id="profile-name" class="profile-name">loremipsum</div>
+                        <div class="profile-rank">loremipsum</div>
+                    </div>
+                    <span class="profile-cog">⚙️</span>
+                </div>
+            </div>
+        </aside>
+    </div>
 
 </body>
 
