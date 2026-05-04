@@ -51,11 +51,14 @@ async function fetchUserData() {
         const response = await fetch(`${API_URL}/fetch-user-info?userID=${userID}`);
         const user = await response.json();
         const title = xpTitleLookup(user.xp);
+        const level = xpToLevel(user.xp)
 
         if (user) {
             document.getElementById('profile-name-topbar').textContent = `${userName}`;
             document.getElementById('profile-name').textContent = `${userName}`;
             document.getElementById('profile-rank').textContent = `${title}`;
+            document.getElementById('pill-xp').textContent = `${user.xp} XP`;
+            document.getElementById('pill-level').textContent = `LV. ${level}`;
         }
     } catch (err) {
         console.error("Error fetching user data:", err);
