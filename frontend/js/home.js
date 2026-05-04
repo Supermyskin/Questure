@@ -14,6 +14,7 @@ async function fetchUserData() {
         const title = xpTitleLookup(user.xp);
 
         if (user) {
+            document.getElementById('profile-name-topbar').textContent = `${userName}`;
             document.getElementById('profile-name').textContent = `${userName}`;
             document.getElementById('profile-rank').textContent = `${title}`;
         }
