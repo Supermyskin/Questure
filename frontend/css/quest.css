@@ -397,16 +397,6 @@
     border-radius: 4px;
 }
 
-.ai-badge {
-    font-family: var(--pixel);
-    font-size: 7px;
-    color: var(--spark);
-    border: 1px solid rgba(192, 132, 252, 0.3);
-    background: rgba(192, 132, 252, 0.08);
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
 .quest-title-row {
     display: flex;
     align-items: flex-start;
