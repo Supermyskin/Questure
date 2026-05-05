@@ -10,7 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../css/shared.css">
-    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/quest.css">
     <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
     <script src="../js/auth-guard.js"></script>
     <link rel="icon" href="../favicon.png">
@@ -75,10 +75,12 @@
         </aside>
         <div class="main">
             <header class="topbar">
-                <div class="topbar-greeting">
-                    <h1>Hey, <span id="profile-name-topbar">user</span> 👾</h1>
-                    <p>// <span id="active-quests-count">0</span> active quests · <span id="current-location">Unknown
-                            Location</span></p>
+                <div class="breadcrumb">
+                    <a href="./home.html">Home</a>
+                    <span>/</span>
+                    <a href="#">My Quests</a>
+                    <span>/</span>
+                    <span class="current">Climb something sketchy</span>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -95,7 +97,7 @@
         </div>
     </div>
 
-    <script src="../js/home.js"></script>
+    <script src="../js/quest.js"></script>
 
 </body>
 

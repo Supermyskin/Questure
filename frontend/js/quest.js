@@ -46,53 +46,18 @@ function xpToLevel(xp) {
     return 1;
 }
 
-function getUserLocation() {
-    return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-    });
-}
-
-async function getCityCountry() {
-    try {
-        const position = await getUserLocation();
-        const { latitude, longitude } = position.coords;
-
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const city =
-            data.address.city ||
-            data.address.town ||
-            data.address.village ||
-            data.address.municipality;
-
-        const countryCode = data.address.country_code?.toUpperCase();
-
-        return `${city}, ${countryCode}`;
-    } catch (err) {
-        console.error(err);
-        return "Unknown location";
-    }
-}
-
 async function fetchUserData() {
     try {
         const response = await fetch(`${API_URL}/fetch-user-info?userID=${userID}`);
         const user = await response.json();
         const title = xpTitleLookup(user.xp);
         const level = xpToLevel(user.xp)
-        const user_location = await getCityCountry()
 
         if (user) {
-            document.getElementById('profile-name-topbar').textContent = `${userName}`;
             document.getElementById('profile-name').textContent = `${userName}`;
             document.getElementById('profile-rank').textContent = `${title}`;
             document.getElementById('pill-xp').textContent = `${user.xp} XP`;
             document.getElementById('pill-level').textContent = `LV. ${level}`;
-            document.getElementById('active-quests-count').textContent = user.activeQuests.length;
-            document.getElementById('current-location').textContent = user_location;
         }
     } catch (err) {
         console.error("Error fetching user data:", err);

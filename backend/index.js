@@ -15,7 +15,9 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  xp: { type: Number, default: 0 }
+  xp: { type: Number, default: 0 },
+  activeQuests: { type: [String], default: [] },
+  doneQuests: { type: [String], default: [] }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -89,7 +91,9 @@ app.get('/fetch-user-info', async (req, res) => {
     res.json({
       name: user.name,
       email: user.email,
-      xp: user.xp || 0
+      xp: user.xp || 0,
+      activeQuests: user.activeQuests || [],
+      doneQuests: user.doneQuests || []
     });
   } catch (err) {
     console.error(err);
