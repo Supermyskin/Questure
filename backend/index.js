@@ -20,7 +20,18 @@ const userSchema = new mongoose.Schema({
   doneQuests: { type: [String], default: [] }
 });
 
+const questSchema = new mongoose.Schema({
+  questID: { type: String, required: true, unique: true, length: 8 },
+  title: { type: String, required: true },
+  banner: { type: String, required: true },
+  description: { type: String, required: true },
+  tags: { type: [String], default: [] },
+  badges: { type: [String], default: [] },
+  baseXP: { type: Number, required: true, min: 0 }
+});
+
 const User = mongoose.model('User', userSchema);
+const Quest = mongoose.model('Quest', questSchema)
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -84,10 +95,12 @@ app.get('/fetch-user-info', async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
+
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     res.json({
       name: user.name,
       email: user.email,
@@ -98,5 +111,35 @@ app.get('/fetch-user-info', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/fetch-quest-info', async (req, res) => {
+  try {
+    const questID = req.query.questID || req.query.id;
+    if (!questID) {
+      return res.status(400).json({ message: "QuestID is required" });
+    }
+
+    const quest = await Quest.findOne({ questID });
+    if (!quest) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+
+    res.json(quest);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/create-quest', async (req, res) => {
+  try {
+    const newQuest = new Quest(req.body);
+    await newQuest.save();
+    res.status(201).json({ message: "Quest created successfully", quest: newQuest });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error creating quest", error: err.message });
   }
 });
