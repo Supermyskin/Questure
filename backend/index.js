@@ -5,10 +5,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const upload = multer();
 
 const userSchema = new mongoose.Schema({
   userId: { type: String, default: () => uuidv4(), unique: true },
@@ -30,8 +41,16 @@ const questSchema = new mongoose.Schema({
   baseXP: { type: Number, required: true, min: 0 }
 });
 
+const questSubmissionSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  questID: { type: String, required: true },
+  photoUrl: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
-const Quest = mongoose.model('Quest', questSchema)
+const Quest = mongoose.model('Quest', questSchema);
+const QuestSubmission = mongoose.model('QuestSubmission', questSubmissionSchema);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -169,26 +188,39 @@ app.post('/accept-quest', async (req, res) => {
   }
 });
 
-app.post('/abandon-quest', async (req, res) => {
+app.post('/upload-photo', upload.single('photo'), async (req, res) => {
   try {
     const { userId, questID } = req.body;
-    if (!userId || !questID) {
-      return res.status(400).json({ message: "UserID and QuestID are required" });
+    if (!userId || !questID || !req.file) {
+      return res.status(400).json({ message: "UserID, QuestID, and photo are required" });
     }
 
-    const user = await User.findOne({ userId });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const streamUpload = (req) => {
+      return new Promise((resolve, reject) => {
+        let stream = cloudinary.uploader.upload_stream(
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
 
-    const index = user.activeQuests.indexOf(questID);
-    if (index === -1) {
-      return res.status(400).json({ message: "Quest is not in your active quests" });
-    }
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+    };
 
-    user.activeQuests.splice(index, 1);
-    await user.save();
-    res.json({ message: "Quest abandoned successfully" });
+    const result = await streamUpload(req);
+
+    const submission = new QuestSubmission({
+      userId,
+      questID,
+      photoUrl: result.secure_url
+    });
+    await submission.save();
+
+    res.json({ message: "Photo uploaded successfully", url: result.secure_url });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

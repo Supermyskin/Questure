@@ -168,19 +168,57 @@ async function fetchQuestData() {
         const acceptBtn = document.querySelector('.btn-complete');
         const acceptedBtn = document.querySelector('.btn-accepted');
         const abandonBtn = document.querySelector('.btn-abandon');
+if (isAccepted) {
+    acceptBtn.style.display = 'none';
+    acceptedBtn.style.display = 'block';
+    abandonBtn.style.display = 'block';
 
-        if (isAccepted) {
-            acceptBtn.style.display = 'none';
-            acceptedBtn.style.display = 'block';
-            abandonBtn.style.display = 'block';
-        }
+    document.getElementById('upload-zone').style.display = 'none';
+    document.getElementById('upload-input-zone').style.display = 'flex';
+}
 
-        acceptBtn.onclick = () => acceptQuest(questID);
-        abandonBtn.onclick = () => abandonQuest(questID);
+acceptBtn.onclick = () => acceptQuest(questID);
+abandonBtn.onclick = () => abandonQuest(questID);
 
-    } catch (err) {
+const photoInput = document.getElementById('photo-input');
+photoInput.onchange = (e) => uploadPhoto(e, questID);
+
+} catch (err) {
+// ... rest of file ...
+
         console.error("Error fetching quest data:", err);
         renderQuestError(err.message || 'Could not load this quest.');
+    }
+}
+
+async function uploadPhoto(e, questID) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const status = document.getElementById('upload-status');
+    status.textContent = 'Uploading...';
+
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('userId', userID);
+    formData.append('questID', questID);
+
+    try {
+        const response = await fetch(`${API_URL}/upload-photo`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed.');
+        }
+
+        const data = await response.json();
+        status.textContent = 'Upload successful!';
+        location.reload();
+    } catch (err) {
+        console.error(err);
+        status.textContent = 'Upload failed.';
     }
 }
 
