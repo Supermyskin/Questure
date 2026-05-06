@@ -30,46 +30,46 @@
             <nav class="sidebar-nav">
                 <span class="nav-section-label">// MAIN</span>
                 <a href="#" class="nav-item active">
-                    <span class="nav-icon">🏠</span> Home
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">🧭</span> Discover
+                    <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">⚡</span> My Quests
+                    <span class="nav-icon"><i class="fa-solid fa-bolt"></i></span> My Quests
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">🗺️</span> Map View
+                    <span class="nav-icon"><i class="fa-solid fa-map"></i></span> Map View
                 </a>
 
                 <span class="nav-section-label">// SOCIAL</span>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">👥</span> Squad
+                    <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span> Squad
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">🏆</span> Leaderboard
+                    <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">📸</span> Gallery
+                    <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
                 </a>
 
                 <span class="nav-section-label">// YOU</span>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">👤</span> Profile
+                    <span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile
                 </a>
                 <a href="#" class="nav-item">
-                    <span class="nav-icon">⚙️</span> Settings
+                    <span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings
                 </a>
             </nav>
 
             <div class="sidebar-bottom">
                 <div class="profile-row">
-                    <div class="profile-avatar">🥹</div>
+                    <div class="profile-avatar"><i class="fa-solid fa-face-grin-beam-sweat"></i></div>
                     <div class="profile-info">
                         <div id="profile-name" class="profile-name">User</div>
                         <div class="profile-rank" id="profile-rank">Offline</div>
                     </div>
-                    <span class="profile-cog">⚙️</span>
+                    <span class="profile-cog"><i class="fa-solid fa-gear"></i></span>
                 </div>
             </div>
         </aside>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
-                        🔔
+                        <i class="fa-solid fa-bell"></i>
                         <span class="notif-dot" hidden></span>
                     </div>
                     <div class="xp-pill-top">
@@ -95,7 +95,8 @@
             <div class="content">
                 <div class="quest-hero">
                     <div class="quest-hero-banner">
-                        <span class="banner-emoji" id="banner-emoji">⚠️</span>
+                        <span class="banner-emoji" id="banner-emoji"><i
+                                class="fa-solid fa-triangle-exclamation"></i></span>
                     </div>
                     <div class="quest-hero-body">
                         <div class="quest-meta-row" id="quest-badges">
@@ -113,11 +114,15 @@
                 </div>
                 <div>
                     <div class="action-section">
-                        <div class="action-title"><span class="pulse"></span> QUEST AVAILABLE</div>
+                        <div class="action-title">· QUEST AVAILABLE</div>
                         <p class="action-body">This quest is sitting right there waiting. Accept it and drag some
                             friends in for an XP bonus!
                         </p>
-                        <button class="btn-complete">⚡️ Accept quest</button>
+                        <button class="btn-complete"><i class="fa-solid fa-bolt"></i> Accept quest</button>
+                        <button class="btn-complete btn-accepted"
+                            style="display:none; cursor: default; opacity: 0.8;">Accepted</button>
+                        <button class="btn-complete btn-abandon" style="display:none;"><i class="fa-solid fa-xmark"></i>
+                            Abandon quest</button>
                     </div>
                 </div>
             </div>

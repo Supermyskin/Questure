@@ -143,3 +143,54 @@ app.post('/create-quest', async (req, res) => {
     res.status(500).json({ message: "Error creating quest", error: err.message });
   }
 });
+
+app.post('/accept-quest', async (req, res) => {
+  try {
+    const { userId, questID } = req.body;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.activeQuests.includes(questID) || user.doneQuests.includes(questID)) {
+      return res.status(400).json({ message: "Quest already accepted or completed" });
+    }
+
+    user.activeQuests.push(questID);
+    await user.save();
+    res.json({ message: "Quest accepted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/abandon-quest', async (req, res) => {
+  try {
+    const { userId, questID } = req.body;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const index = user.activeQuests.indexOf(questID);
+    if (index === -1) {
+      return res.status(400).json({ message: "Quest is not in your active quests" });
+    }
+
+    user.activeQuests.splice(index, 1);
+    await user.save();
+    res.json({ message: "Quest abandoned successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});

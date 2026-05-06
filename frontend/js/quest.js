@@ -159,13 +159,76 @@ async function fetchQuestData() {
 
         const quest = await response.json();
         renderQuest(quest);
+
+        // Check user status to toggle buttons
+        const userRes = await fetch(`${API_URL}/fetch-user-info?userID=${userID}`);
+        const user = await userRes.json();
+        const isAccepted = user.activeQuests.includes(questID);
+
+        const acceptBtn = document.querySelector('.btn-complete');
+        const acceptedBtn = document.querySelector('.btn-accepted');
+        const abandonBtn = document.querySelector('.btn-abandon');
+
+        if (isAccepted) {
+            acceptBtn.style.display = 'none';
+            acceptedBtn.style.display = 'block';
+            abandonBtn.style.display = 'block';
+        }
+
+        acceptBtn.onclick = () => acceptQuest(questID);
+        abandonBtn.onclick = () => abandonQuest(questID);
+
     } catch (err) {
         console.error("Error fetching quest data:", err);
         renderQuestError(err.message || 'Could not load this quest.');
     }
 }
 
+async function acceptQuest(questID) {
+    try {
+        const response = await fetch(`${API_URL}/accept-quest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID: questID })
+        });
 
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to accept quest.');
+        }
+
+        alert('Quest accepted!');
+        location.reload();
+    } catch (err) {
+        console.error("Error accepting quest:", err);
+        alert(err.message);
+    }
+}
+
+async function abandonQuest(questID) {
+    if (!confirm('Are you sure you want to abandon this quest?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/abandon-quest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID: questID })
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to abandon quest.');
+        }
+
+        alert('Quest abandoned!');
+        location.reload();
+    } catch (err) {
+        console.error("Error abandoning quest:", err);
+        alert(err.message);
+    }
+}
 
 fetchUserData();
 fetchQuestData();
