@@ -136,14 +136,16 @@
                             <div class="upload-title">Locked</div>
                             <p class="upload-sub">Accept the quest to unlock photo uploads</p>
                         </div>
-                        <div id="upload-input-zone" class="upload-zone" style="display:none;">
+                        <div id="upload-input-zone" class="upload-zone" role="button" tabindex="0" style="display:none;">
                             <input type="file" id="photo-input" accept="image/*" style="display:none;">
-                            <label for="photo-input" class="upload-icon" style="cursor:pointer;">
+                            <span class="upload-icon">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                            </label>
+                            </span>
                             <div class="upload-title">Click to upload proof</div>
                             <p class="upload-sub" id="upload-status"></p>
                         </div>
+                        <div id="photo-gallery-empty" class="photo-gallery-empty">No photos uploaded yet.</div>
+                        <div id="photo-gallery" class="photo-gallery" aria-live="polite"></div>
                     </div>
                 </div>
             </div>
