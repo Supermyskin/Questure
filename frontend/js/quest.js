@@ -147,11 +147,106 @@ function renderQuestError(message) {
     renderQuestTags([]);
 }
 
+function updateUploadCount(count) {
+    const label = count === 1 ? '1 uploaded' : `${count} uploaded`;
+    document.getElementById('upload-count').textContent = label;
+}
+
+function renderQuestPhotos(photos = [], questID = getQuestIDFromURL()) {
+    const gallery = document.getElementById('photo-gallery');
+    const empty = document.getElementById('photo-gallery-empty');
+    if (!gallery || !empty) return;
+
+    gallery.replaceChildren();
+    updateUploadCount(photos.length);
+
+    if (!photos.length) {
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+    photos.forEach((photo, index) => {
+        const item = document.createElement('div');
+        item.className = 'photo-gallery-item';
+
+        const link = document.createElement('a');
+        link.className = 'photo-gallery-link';
+        link.href = photo.photoUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        const image = document.createElement('img');
+        image.src = photo.photoUrl;
+        image.alt = `Quest proof photo ${index + 1}`;
+        image.loading = 'lazy';
+
+        const meta = document.createElement('span');
+        meta.className = 'photo-gallery-meta';
+        meta.textContent = photo.createdAt ? new Date(photo.createdAt).toLocaleDateString() : 'Uploaded';
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'photo-remove-btn';
+        removeButton.title = 'Remove photo';
+        removeButton.setAttribute('aria-label', `Remove quest proof photo ${index + 1}`);
+        removeButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        removeButton.onclick = () => deleteQuestPhoto(photo._id, questID);
+
+        link.append(image, meta);
+        item.append(link, removeButton);
+        gallery.appendChild(item);
+    });
+}
+
+async function fetchQuestPhotos(questID) {
+    if (!userID || !questID) {
+        renderQuestPhotos([]);
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/fetch-quest-photos?userID=${encodeURIComponent(userID)}&questID=${encodeURIComponent(questID)}`);
+        if (!response.ok) {
+            throw new Error(`Photo request failed with ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderQuestPhotos(Array.isArray(data.photos) ? data.photos : [], questID);
+    } catch (err) {
+        console.error("Error fetching quest photos:", err);
+        renderQuestPhotos([]);
+    }
+}
+
+function unlockPhotoUpload() {
+    document.getElementById('upload-zone').style.display = 'none';
+    document.getElementById('upload-input-zone').style.display = 'flex';
+}
+
+function setupPhotoUpload(questID) {
+    const photoInput = document.getElementById('photo-input');
+    const uploadInputZone = document.getElementById('upload-input-zone');
+    if (!photoInput || !uploadInputZone) return;
+
+    uploadInputZone.onclick = () => photoInput.click();
+    uploadInputZone.onkeydown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            photoInput.click();
+        }
+    };
+    photoInput.onchange = (event) => uploadPhoto(event, questID);
+}
+
 async function fetchQuestData() {
     const questID = getQuestIDFromURL();
     if (!questID) return;
 
     try {
+        setupPhotoUpload(questID);
+        fetchQuestPhotos(questID);
+
         const response = await fetch(`${API_URL}/fetch-quest-info?questID=${encodeURIComponent(questID)}`);
         if (!response.ok) {
             throw new Error(response.status === 404 ? 'Quest not found.' : `Quest request failed with ${response.status}`);
@@ -168,23 +263,16 @@ async function fetchQuestData() {
         const acceptBtn = document.querySelector('.btn-complete');
         const acceptedBtn = document.querySelector('.btn-accepted');
         const abandonBtn = document.querySelector('.btn-abandon');
-if (isAccepted) {
-    acceptBtn.style.display = 'none';
-    acceptedBtn.style.display = 'block';
-    abandonBtn.style.display = 'block';
+        if (isAccepted) {
+            acceptBtn.style.display = 'none';
+            acceptedBtn.style.display = 'block';
+            abandonBtn.style.display = 'block';
+            unlockPhotoUpload();
+        }
 
-    document.getElementById('upload-zone').style.display = 'none';
-    document.getElementById('upload-input-zone').style.display = 'flex';
-}
-
-acceptBtn.onclick = () => acceptQuest(questID);
-abandonBtn.onclick = () => abandonQuest(questID);
-
-const photoInput = document.getElementById('photo-input');
-photoInput.onchange = (e) => uploadPhoto(e, questID);
-
-} catch (err) {
-// ... rest of file ...
+        acceptBtn.onclick = () => acceptQuest(questID);
+        abandonBtn.onclick = () => abandonQuest(questID);
+    } catch (err) {
 
         console.error("Error fetching quest data:", err);
         renderQuestError(err.message || 'Could not load this quest.');
@@ -215,10 +303,35 @@ async function uploadPhoto(e, questID) {
 
         const data = await response.json();
         status.textContent = 'Upload successful!';
-        location.reload();
+        e.target.value = '';
+        await fetchQuestPhotos(questID);
     } catch (err) {
         console.error(err);
         status.textContent = 'Upload failed.';
+    }
+}
+
+async function deleteQuestPhoto(submissionId, questID) {
+    if (!submissionId || !questID) return;
+    if (!confirm('Remove this photo from the quest?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/delete-photo/${encodeURIComponent(submissionId)}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID })
+        });
+
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to remove photo.'));
+        }
+
+        await fetchQuestPhotos(questID);
+    } catch (err) {
+        console.error("Error deleting photo:", err);
+        alert(err.message);
     }
 }
 
@@ -243,6 +356,15 @@ async function acceptQuest(questID) {
     }
 }
 
+async function getErrorMessage(response, fallback) {
+    try {
+        const data = await response.json();
+        return data.message || fallback;
+    } catch (err) {
+        return fallback;
+    }
+}
+
 async function abandonQuest(questID) {
     if (!confirm('Are you sure you want to abandon this quest?')) {
         return;
@@ -256,8 +378,7 @@ async function abandonQuest(questID) {
         });
 
         if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || 'Failed to abandon quest.');
+            throw new Error(await getErrorMessage(response, 'Failed to abandon quest.'));
         }
 
         alert('Quest abandoned!');

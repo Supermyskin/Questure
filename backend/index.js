@@ -60,23 +60,6 @@ mongoose.connect(process.env.MONGO_URI)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-function getCloudinaryPublicId(photoUrl) {
-  try {
-    const url = new URL(photoUrl);
-    const uploadPath = '/upload/';
-    const uploadIndex = url.pathname.indexOf(uploadPath);
-    if (uploadIndex === -1) return null;
-
-    let publicPath = url.pathname.slice(uploadIndex + uploadPath.length);
-    publicPath = publicPath.replace(/^v\d+\//, '');
-    publicPath = publicPath.replace(/\.[^/.]+$/, '');
-    return decodeURIComponent(publicPath);
-  } catch (err) {
-    return null;
-  }
-}
-
-
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -169,25 +152,6 @@ app.get('/fetch-quest-info', async (req, res) => {
   }
 });
 
-app.get('/fetch-quest-photos', async (req, res) => {
-  try {
-    const userId = req.query.userID || req.query.userId;
-    const questID = req.query.questID || req.query.id;
-    if (!userId || !questID) {
-      return res.status(400).json({ message: "UserID and QuestID are required" });
-    }
-
-    const submissions = await QuestSubmission.find({ userId, questID })
-      .sort({ createdAt: -1 })
-      .select('photoUrl createdAt');
-
-    res.json({ photos: submissions });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 app.post('/create-quest', async (req, res) => {
   try {
     const newQuest = new Quest(req.body);
@@ -250,39 +214,6 @@ app.post('/abandon-quest', async (req, res) => {
   }
 });
 
-app.delete('/delete-photo/:submissionId', async (req, res) => {
-  try {
-    const { submissionId } = req.params;
-    const { userId, questID } = req.body;
-    if (!userId || !questID) {
-      return res.status(400).json({ message: "UserID and QuestID are required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
-      return res.status(400).json({ message: "Invalid photo ID" });
-    }
-
-    const submission = await QuestSubmission.findOne({ _id: submissionId, userId, questID });
-    if (!submission) {
-      return res.status(404).json({ message: "Photo not found" });
-    }
-
-    const publicId = submission.publicId || getCloudinaryPublicId(submission.photoUrl);
-    if (publicId) {
-      const result = await cloudinary.uploader.destroy(publicId);
-      if (result.result !== 'ok' && result.result !== 'not found') {
-        return res.status(502).json({ message: "Could not delete photo from Cloudinary" });
-      }
-    }
-
-    await QuestSubmission.deleteOne({ _id: submission._id });
-    res.json({ message: "Photo deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 app.post('/upload-photo', upload.single('photo'), async (req, res) => {
   try {
     const { userId, questID } = req.body;
@@ -322,3 +253,71 @@ app.post('/upload-photo', upload.single('photo'), async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.delete('/delete-photo/:submissionId', async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const { userId, questID } = req.body;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+      return res.status(400).json({ message: "Invalid photo ID" });
+    }
+
+    const submission = await QuestSubmission.findOne({ _id: submissionId, userId, questID });
+    if (!submission) {
+      return res.status(404).json({ message: "Photo not found" });
+    }
+
+    const publicId = submission.publicId || getCloudinaryPublicId(submission.photoUrl);
+    if (publicId) {
+      const result = await cloudinary.uploader.destroy(publicId);
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        return res.status(502).json({ message: "Could not delete photo from Cloudinary" });
+      }
+    }
+
+    await QuestSubmission.deleteOne({ _id: submission._id });
+    res.json({ message: "Photo deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/fetch-quest-photos', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    const questID = req.query.questID || req.query.id;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const submissions = await QuestSubmission.find({ userId, questID })
+      .sort({ createdAt: -1 })
+      .select('photoUrl createdAt');
+
+    res.json({ photos: submissions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+function getCloudinaryPublicId(photoUrl) {
+  try {
+    const url = new URL(photoUrl);
+    const uploadPath = '/upload/';
+    const uploadIndex = url.pathname.indexOf(uploadPath);
+    if (uploadIndex === -1) return null;
+
+    let publicPath = url.pathname.slice(uploadIndex + uploadPath.length);
+    publicPath = publicPath.replace(/^v\d+\//, '');
+    publicPath = publicPath.replace(/\.[^/.]+$/, '');
+    return decodeURIComponent(publicPath);
+  } catch (err) {
+    return null;
+  }
+}
