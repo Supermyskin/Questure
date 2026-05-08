@@ -319,6 +319,16 @@ async function fetchQuestData() {
             acceptedBtn.style.display = 'block';
             abandonBtn.style.display = 'block';
             unlockPhotoUpload();
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('openUpload') === 'true') {
+                setTimeout(() => {
+                    const photoInput = document.getElementById('photo-input');
+                    if (photoInput) {
+                        photoInput.click();
+                    }
+                }, 500);
+            }
         }
 
         acceptBtn.onclick = () => acceptQuest(questID);
