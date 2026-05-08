@@ -260,3 +260,188 @@
     font-size: 7px;
     color: var(--dim);
 }
+
+.sec-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.sec-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.sec-pixel {
+    font-family: var(--pixel);
+    font-size: 7px;
+    color: var(--purple);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.sec-link {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--purple);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.sec-link:hover {
+    color: var(--glow);
+}
+
+
+.active-quest {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+
+.active-quest::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.active-quest::before {
+    background: linear-gradient(90deg, var(--purple), var(--spark));
+}
+
+.active-quest:hover {
+    transform: translateY(-2px);
+    border-color: var(--border2);
+}
+
+.aq-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.aq-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    flex: 1;
+    padding-right: 12px;
+}
+
+.aq-xp {
+    font-family: var(--pixel);
+    font-size: 7px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--glow);
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.aq-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.aq-meta-item {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aq-bar-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.aq-bar-label span {
+    font-family: var(--pixel);
+    font-size: 7px;
+    color: var(--dim);
+}
+
+.aq-bar-label span:last-child {
+    color: var(--glow);
+}
+
+.aq-track {
+    background: var(--bg);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.aq-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--purple), var(--spark));
+}
+
+.aq-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+.btn-sm-primary {
+    background: var(--purple);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.btn-sm-primary:hover {
+    background: var(--glow);
+    transform: translateY(-1px);
+}
+
+.btn-sm-ghost {
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--body);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-sm-ghost:hover {
+    border-color: var(--glow);
+    color: var(--text);
+}

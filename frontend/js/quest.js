@@ -1,7 +1,7 @@
 const userName = localStorage.getItem('userName');
 const userID = localStorage.getItem('userID');
 const API_URL = 'http://127.0.0.1:3000';
-const DEFAULT_QUEST_TITLE = 'Climb something sketchy';
+const DEFAULT_QUEST_TITLE = 'QUEST UNAVAILABLE';
 const questState = {
     questID: null,
     accepted: false,
