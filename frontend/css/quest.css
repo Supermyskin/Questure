@@ -535,6 +535,19 @@
     border: 2px solid #ff4757;
     color: #ff4757;
     margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.btn-abandon:hover {
+    background: rgba(255, 71, 87, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+    border-color: #ff4757;
+    transform: translateY(-2px);
+}
+
+.btn-abandon:active {
+    transform: translateY(1px);
+    box-shadow: none;
 }
 
 .section {
