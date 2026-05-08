@@ -95,8 +95,7 @@
             <div class="content">
                 <div class="quest-hero">
                     <div class="quest-hero-banner">
-                        <span class="banner-emoji" id="banner-emoji"><i
-                                class="fa-solid fa-triangle-exclamation"></i></span>
+                        <span class="banner-emoji" id="banner-emoji">⚠️</span>
                     </div>
                     <div class="quest-hero-body">
                         <div class="quest-meta-row" id="quest-badges">
@@ -128,15 +127,18 @@
                 <div class="section">
                     <div class="section-header">
                         <span class="section-title-pixel">// PHOTO PROOF</span>
-                        <span style="font-size:11px;font-weight:700;color:var(--dim)" id="upload-count">0 uploaded</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--dim)" id="upload-count">0
+                            uploaded</span>
                     </div>
                     <div class="section-body">
-                        <div id="upload-zone" class="upload-zone" style="opacity:0.4;pointer-events:none;cursor:not-allowed">
+                        <div id="upload-zone" class="upload-zone"
+                            style="opacity:0.4;pointer-events:none;cursor:not-allowed">
                             <span class="upload-icon"><i class="fa-solid fa-lock"></i></span>
                             <div class="upload-title">Locked</div>
                             <p class="upload-sub">Accept the quest to unlock photo uploads</p>
                         </div>
-                        <div id="upload-input-zone" class="upload-zone" role="button" tabindex="0" style="display:none;">
+                        <div id="upload-input-zone" class="upload-zone" role="button" tabindex="0"
+                            style="display:none;">
                             <input type="file" id="photo-input" accept="image/*" style="display:none;">
                             <span class="upload-icon">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -148,11 +150,22 @@
                         <div id="photo-gallery" class="photo-gallery" aria-live="polite"></div>
                     </div>
                 </div>
+                <div class="section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// Finish Quest</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--dim)" id="upload-count">0
+                            uploaded</span>
+                    </div>
+                    <div class="section-body">
+                        <div id="upload-zone" class="upload-zone"
+                            style="opacity:0.4;pointer-events:none;cursor:not-allowed">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script src="../js/quest.js"></script>
+        <script src="../js/quest.js"></script>
 
 </body>
 
