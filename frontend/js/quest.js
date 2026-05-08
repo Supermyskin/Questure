@@ -2,6 +2,13 @@ const userName = localStorage.getItem('userName');
 const userID = localStorage.getItem('userID');
 const API_URL = 'http://127.0.0.1:3000';
 const DEFAULT_QUEST_TITLE = 'Climb something sketchy';
+const questState = {
+    questID: null,
+    accepted: false,
+    photoCount: 0,
+    submitted: false,
+    completed: false
+};
 
 const thresholds = [
     { level: 1, xp: 0 },
@@ -152,13 +159,47 @@ function updateUploadCount(count) {
     document.getElementById('upload-count').textContent = label;
 }
 
+function updateSubmitButton() {
+    const submitButton = document.getElementById('btn-submit-quest');
+    const submitStatus = document.getElementById('submit-status');
+    const debugResetButton = document.getElementById('btn-debug-reset-quest');
+    if (!submitButton || !submitStatus) return;
+
+    const canSubmit = questState.accepted && questState.photoCount > 0 && !questState.completed && !questState.submitted;
+
+    submitButton.disabled = !canSubmit;
+    submitButton.classList.toggle('btn-ghost-dashed', !canSubmit);
+    if (debugResetButton) {
+        debugResetButton.style.display = questState.completed ? 'block' : 'none';
+    }
+
+    if (questState.completed) {
+        submitButton.textContent = 'Quest Completed';
+        submitStatus.textContent = 'Completed';
+    } else if (!questState.accepted) {
+        submitButton.textContent = 'Submit Quest';
+        submitStatus.textContent = 'Accept quest first';
+    } else if (questState.photoCount < 1) {
+        submitButton.textContent = 'Submit Quest';
+        submitStatus.textContent = 'Upload proof first';
+    } else if (questState.submitted) {
+        submitButton.textContent = 'Quest Submitted';
+        submitStatus.textContent = 'Completed';
+    } else {
+        submitButton.textContent = 'Submit Quest';
+        submitStatus.textContent = 'Ready';
+    }
+}
+
 function renderQuestPhotos(photos = [], questID = getQuestIDFromURL()) {
     const gallery = document.getElementById('photo-gallery');
     const empty = document.getElementById('photo-gallery-empty');
     if (!gallery || !empty) return;
 
     gallery.replaceChildren();
+    questState.photoCount = photos.length;
     updateUploadCount(photos.length);
+    updateSubmitButton();
 
     if (!photos.length) {
         empty.style.display = 'block';
@@ -254,12 +295,26 @@ async function fetchQuestData() {
         renderQuest(quest);
         const userRes = await fetch(`${API_URL}/fetch-user-info?userID=${userID}`);
         const user = await userRes.json();
-        const isAccepted = user.activeQuests.includes(questID);
+        const isAccepted = Array.isArray(user.activeQuests) && user.activeQuests.includes(questID);
+        const isCompleted = Array.isArray(user.doneQuests) && user.doneQuests.includes(questID);
+
+        questState.questID = questID;
+        questState.accepted = isAccepted;
+        questState.completed = isCompleted;
+        questState.submitted = false;
 
         const acceptBtn = document.querySelector('.btn-complete');
         const acceptedBtn = document.querySelector('.btn-accepted');
         const abandonBtn = document.querySelector('.btn-abandon');
-        if (isAccepted) {
+        const submitBtn = document.getElementById('btn-submit-quest');
+        const debugResetBtn = document.getElementById('btn-debug-reset-quest');
+
+        if (isCompleted) {
+            acceptBtn.style.display = 'none';
+            acceptedBtn.style.display = 'block';
+            acceptedBtn.textContent = 'Completed';
+            abandonBtn.style.display = 'none';
+        } else if (isAccepted) {
             acceptBtn.style.display = 'none';
             acceptedBtn.style.display = 'block';
             abandonBtn.style.display = 'block';
@@ -268,6 +323,9 @@ async function fetchQuestData() {
 
         acceptBtn.onclick = () => acceptQuest(questID);
         abandonBtn.onclick = () => abandonQuest(questID);
+        submitBtn.onclick = () => submitQuest(questID);
+        debugResetBtn.onclick = () => debugResetQuestCompletion(questID);
+        updateSubmitButton();
     } catch (err) {
 
         console.error("Error fetching quest data:", err);
@@ -381,6 +439,62 @@ async function abandonQuest(questID) {
         location.reload();
     } catch (err) {
         console.error("Error abandoning quest:", err);
+        alert(err.message);
+    }
+}
+
+async function submitQuest(questID) {
+    if (!questState.accepted || questState.photoCount < 1 || questState.completed) {
+        updateSubmitButton();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/submit-quest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID: questID })
+        });
+
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to submit quest.'));
+        }
+
+        const data = await response.json();
+        questState.accepted = false;
+        questState.submitted = true;
+        questState.completed = true;
+
+        alert(`Quest completed! +${data.awardedXP || 0} XP`);
+        await fetchUserData();
+        updateSubmitButton();
+        location.reload();
+    } catch (err) {
+        console.error("Error submitting quest:", err);
+        alert(err.message);
+    }
+}
+
+async function debugResetQuestCompletion(questID) {
+    if (!confirm('Debug reset this quest so you can do it again?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/debug-reset-quest-completion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID: questID })
+        });
+
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to reset quest completion.'));
+        }
+
+        alert('Quest reset for debugging.');
+        location.reload();
+    } catch (err) {
+        console.error("Error resetting quest completion:", err);
         alert(err.message);
     }
 }

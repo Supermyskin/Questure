@@ -530,6 +530,22 @@
     transform: translateY(0);
 }
 
+.btn-complete.btn-ghost-dashed {
+    background: transparent;
+    border: 2px dashed var(--border2);
+    color: var(--dim);
+    box-shadow: none;
+    cursor: default;
+}
+
+.btn-complete.btn-ghost-dashed:hover {
+    border-color: var(--dim);
+    color: var(--muted);
+    opacity: 1;
+    transform: none;
+    box-shadow: none;
+}
+
 .btn-abandon {
     background: transparent;
     border: 2px solid #ff4757;
@@ -548,6 +564,20 @@
 .btn-abandon:active {
     transform: translateY(1px);
     box-shadow: none;
+}
+
+.btn-debug-reset {
+    background: transparent;
+    border: 2px solid var(--amber);
+    color: var(--amber);
+    box-shadow: none;
+    margin-top: 10px;
+}
+
+.btn-debug-reset:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--amber);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 .section {

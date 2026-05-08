@@ -28,7 +28,15 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   xp: { type: Number, default: 0 },
   activeQuests: { type: [String], default: [] },
-  doneQuests: { type: [String], default: [] }
+  doneQuests: { type: [String], default: [] },
+  questCooldowns: {
+    type: [{
+      questID: { type: String, required: true },
+      completedAt: { type: Date, required: true },
+      cooldownUntil: { type: Date, required: true }
+    }],
+    default: []
+  }
 });
 
 const questSchema = new mongoose.Schema({
@@ -125,7 +133,8 @@ app.get('/fetch-user-info', async (req, res) => {
       email: user.email,
       xp: user.xp || 0,
       activeQuests: user.activeQuests || [],
-      doneQuests: user.doneQuests || []
+      doneQuests: user.doneQuests || [],
+      questCooldowns: user.questCooldowns || []
     });
   } catch (err) {
     console.error(err);
@@ -175,8 +184,12 @@ app.post('/accept-quest', async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.activeQuests.includes(questID) || user.doneQuests.includes(questID)) {
-      return res.status(400).json({ message: "Quest already accepted or completed" });
+    if (user.activeQuests.includes(questID)) {
+      return res.status(400).json({ message: "Quest already accepted" });
+    }
+
+    if ((user.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already completed" });
     }
 
     user.activeQuests.push(questID);
@@ -214,11 +227,99 @@ app.post('/abandon-quest', async (req, res) => {
   }
 });
 
+app.post('/submit-quest', async (req, res) => {
+  try {
+    const { userId, questID } = req.body;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if ((user.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already completed" });
+    }
+
+    if (!user.activeQuests.includes(questID)) {
+      return res.status(400).json({ message: "Quest must be accepted before submitting" });
+    }
+
+    const quest = await Quest.findOne({ questID });
+    if (!quest) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+
+    const photoCount = await QuestSubmission.countDocuments({ userId, questID });
+    if (photoCount < 1) {
+      return res.status(400).json({ message: "Upload at least one photo before submitting" });
+    }
+
+    user.xp = (user.xp || 0) + (quest.baseXP || 0);
+    user.activeQuests = user.activeQuests.filter((activeQuestID) => activeQuestID !== questID);
+    user.questCooldowns = (user.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
+    user.doneQuests = user.doneQuests || [];
+    if (!user.doneQuests.includes(questID)) {
+      user.doneQuests.push(questID);
+    }
+
+    await user.save();
+
+    res.json({
+      message: "Quest submitted successfully",
+      awardedXP: quest.baseXP || 0,
+      xp: user.xp
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/debug-reset-quest-completion', async (req, res) => {
+  try {
+    const { userId, questID } = req.body;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.doneQuests = (user.doneQuests || []).filter((doneQuestID) => doneQuestID !== questID);
+    user.activeQuests = (user.activeQuests || []).filter((activeQuestID) => activeQuestID !== questID);
+    user.questCooldowns = (user.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
+    await user.save();
+
+    res.json({ message: "Quest completion reset for debugging" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.post('/upload-photo', upload.single('photo'), async (req, res) => {
   try {
     const { userId, questID } = req.body;
     if (!userId || !questID || !req.file) {
       return res.status(400).json({ message: "UserID, QuestID, and photo are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if ((user.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already completed" });
+    }
+
+    if (!user.activeQuests.includes(questID)) {
+      return res.status(400).json({ message: "Quest must be accepted before uploading photos" });
     }
 
     const streamUpload = (req) => {
