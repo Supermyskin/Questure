@@ -246,16 +246,12 @@ async function fetchQuestData() {
     try {
         setupPhotoUpload(questID);
         fetchQuestPhotos(questID);
-
         const response = await fetch(`${API_URL}/fetch-quest-info?questID=${encodeURIComponent(questID)}`);
         if (!response.ok) {
             throw new Error(response.status === 404 ? 'Quest not found.' : `Quest request failed with ${response.status}`);
         }
-
         const quest = await response.json();
         renderQuest(quest);
-
-        // Check user status to toggle buttons
         const userRes = await fetch(`${API_URL}/fetch-user-info?userID=${userID}`);
         const user = await userRes.json();
         const isAccepted = user.activeQuests.includes(questID);
