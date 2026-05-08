@@ -141,8 +141,17 @@ header {
     transform: translateY(-1px);
 }
 
-.header-play:active {
-    transform: translateY(1px);
+.btn-ghost-dashed {
+    background: transparent;
+    border: 2px dashed var(--border2);
+    color: var(--dim);
+    transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    cursor: default;
+}
+
+.btn-ghost-dashed:hover {
+    border-color: var(--dim);
+    color: var(--muted);
 }
 
 .nav-links {
