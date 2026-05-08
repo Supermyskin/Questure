@@ -108,7 +108,7 @@ function createQuestCard(quest) {
     else if (capDifficulty.toLowerCase().includes('hard')) diffIcon = '🔴';
     let locIcon = '📍';
     const card = `
-        <div class="active-quest">
+        <div class="active-quest" data-id="${quest._id}">
             <div class="aq-top">
                 <div class="aq-title">${quest.title}</div>
                 <span class="aq-xp">+${quest.baseXP} XP</span>
@@ -125,7 +125,7 @@ function createQuestCard(quest) {
                 <div class="aq-fill" style="width:0%"></div>
             </div>
             <div class="aq-actions">
-                <button class="btn-sm-primary">View quest</button>
+                <button class="btn-sm-primary view-quest-btn" data-id="${quest._id}">View quest</button>
                 <button class="btn-sm-ghost">Upload photo</button>
             </div>
         </div>
@@ -159,6 +159,12 @@ async function fetchAndDisplayActiveQuests() {
     validQuests.forEach(quest => {
         const cardHTML = createQuestCard(quest);
         questsListContainer.insertAdjacentHTML('beforeend', cardHTML);
+    });
+    document.querySelectorAll('.view-quest-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const questID = e.target.getAttribute('data-id');
+            window.location.href = `../pages/quest.html?questID=${questID}`;
+        });
     });
 }
 
