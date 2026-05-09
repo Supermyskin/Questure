@@ -21,11 +21,14 @@ cloudinary.config({
 
 const upload = multer();
 
+const emojis = ['🚀', '🌟'];
+
 const userSchema = new mongoose.Schema({
   userId: { type: String, default: () => uuidv4(), unique: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  emoji: { type: String, required: true },
   xp: { type: Number, default: 0 },
   activeQuests: { type: [String], default: [] },
   doneQuests: { type: [String], default: [] },
@@ -78,10 +81,12 @@ app.post('/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     const newUser = new User({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      emoji: randomEmoji
     });
 
     await newUser.save();
@@ -131,6 +136,7 @@ app.get('/fetch-user-info', async (req, res) => {
     res.json({
       name: user.name,
       email: user.email,
+      emoji: user.emoji || '🕵️‍♂️',
       xp: user.xp || 0,
       activeQuests: user.activeQuests || [],
       doneQuests: user.doneQuests || [],

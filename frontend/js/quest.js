@@ -66,6 +66,7 @@ async function fetchUserData() {
         const level = xpToLevel(user.xp)
 
         if (user) {
+            document.getElementById('profile-emoji').textContent = user.emoji;
             document.getElementById('profile-name').textContent = `${userName}`;
             document.getElementById('profile-rank').textContent = `${title}`;
             document.getElementById('pill-xp').textContent = `${user.xp} XP`;

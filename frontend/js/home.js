@@ -78,6 +78,7 @@ async function fetchUserData() {
         const level = xpToLevel(user.xp)
         const user_location = await getCityCountry()
         if (user) {
+            document.getElementById('profile-emoji').textContent = user.emoji;
             document.getElementById('profile-name-topbar').textContent = `${userName}`;
             document.getElementById('profile-name').textContent = `${userName}`;
             document.getElementById('profile-rank').textContent = `${title}`;
@@ -93,7 +94,19 @@ async function fetchUserData() {
     }
 }
 
-function createQuestCard(quest) {
+async function getPhotoCount(userID, questID) {
+    try {
+        const response = await fetch(`${API_URL}/fetch-quest-photos?userID=${encodeURIComponent(userID)}&questID=${encodeURIComponent(questID)}`);
+        if (!response.ok) return 0;
+        const data = await response.json();
+        return data.photos ? data.photos.length : 0;
+    } catch (err) {
+        console.error("Error fetching photo count:", err);
+        return 0;
+    }
+}
+
+function createQuestCard(quest, photoCount) {
     const difficulty = quest.tags.find(t => t.toLowerCase().includes('easy') ||
         t.toLowerCase().includes('medium') ||
         t.toLowerCase().includes('hard')) ||
@@ -107,6 +120,9 @@ function createQuestCard(quest) {
     else if (capDifficulty.toLowerCase().includes('medium')) diffIcon = '🟡';
     else if (capDifficulty.toLowerCase().includes('hard')) diffIcon = '🔴';
     let locIcon = '📍';
+    const progress = photoCount > 0 ? '50%' : '0%';
+    const statusLabel = photoCount > 0 ? 'In progress' : 'Ready to start';
+
     const card = `
         <div class="active-quest" data-id="${quest.questID}">
             <div class="aq-top">
@@ -119,10 +135,10 @@ function createQuestCard(quest) {
             </div>
             <div class="aq-bar-label">
                 <span>Progress</span>
-                <span>Ready to start</span>
+                <span>${statusLabel}</span>
             </div>
             <div class="aq-track">
-                <div class="aq-fill" style="width:0%"></div>
+                <div class="aq-fill" style="width:${progress}"></div>
             </div>
             <div class="aq-actions">
                 <button class="btn-sm-primary view-quest-btn" data-id="${quest.questID}">View quest</button>
@@ -135,28 +151,30 @@ function createQuestCard(quest) {
 async function fetchAndDisplayActiveQuests() {
     const user = await fetchUserData();
     if (!user || !user.activeQuests || user.activeQuests.length === 0) {
-        document.getElementById('quests-list').innerHTML = '<p>No active quests. Accept quests to see them here.</p>';
+        document.getElementById('quests-list').innerHTML = '<span class="logo-sub">No active quests. Accept quests to see them here.</span>';
         return;
     }
     const recentActiveQuests = user.activeQuests.slice(-3).reverse();
     const questsListContainer = document.getElementById('quests-list');
     questsListContainer.innerHTML = '';
-    const questPromises = recentActiveQuests.map(questID =>
-        fetch(`${API_URL}/fetch-quest-info?questID=${questID}`)
-            .then(res => res.json())
-            .catch(err => {
-                console.error(`Failed to fetch quest ${questID}:`, err);
-                return null;
-            })
-    );
-    const quests = await Promise.all(questPromises);
-    const validQuests = quests.filter(q => q !== null);
+
+    const questDataPromises = recentActiveQuests.map(async questID => {
+        const [questRes, photoCount] = await Promise.all([
+            fetch(`${API_URL}/fetch-quest-info?questID=${questID}`).then(res => res.json()),
+            getPhotoCount(userID, questID)
+        ]);
+        return { quest: questRes, photoCount };
+    });
+
+    const results = await Promise.all(questDataPromises);
+    const validQuests = results.filter(r => r.quest !== null);
+
     if (validQuests.length === 0) {
         questsListContainer.innerHTML = '<p>Failed to load quests.</p>';
         return;
     }
-    validQuests.forEach(quest => {
-        const cardHTML = createQuestCard(quest);
+    validQuests.forEach(({ quest, photoCount }) => {
+        const cardHTML = createQuestCard(quest, photoCount);
         questsListContainer.insertAdjacentHTML('beforeend', cardHTML);
     });
     document.querySelectorAll('.view-quest-btn').forEach(btn => {
