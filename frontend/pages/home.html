@@ -75,10 +75,8 @@
         </aside>
         <div class="main">
             <header class="topbar">
-                <div class="topbar-greeting">
-                    <h1>Hey, <span id="profile-name-topbar">user</span></i></h1>
-                    <p>// <span id="active-quests-count">0</span> active quests · <span id="current-location">Unknown
-                            Location</span></p>
+                <div class="breadcrumb">
+                    <span class="current" style="font-size:1rem">Home</span>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -92,25 +90,21 @@
                     </div>
                 </div>
             </header>
-            <div class="content-container">
-                <div class="home-grid">
-                    <div class="sec-header">
-                        <div>
-                            <span class="sec-pixel">// IN PROGRESS</span>
-                            <h2 class="sec-title">Your active quests</h2>
-                        </div>
-                        <a href="#" class="sec-link">View all →</a>
+            <div class="content">
+                <div class="section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// IN PROGRESS</span>
+                        <a href="#" class="sec-link" style="font-size:11px">View all →</a>
                     </div>
-                    <div id="quests-list">
-                    </div>
-                    <div>
-                        <span class="sec-pixel">// FRIEND ACTIVITY</span>
-                        <h2 class="sec-title">What are your friends doing</h2>
+                    <div class="section-body" id="quests-list">
                     </div>
                 </div>
-                <div class="feed-panel">
-                    <div id="quest-invites-list">
-                        <div class="feed-empty">No quest invites right now.</div>
+                <div class="section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// FRIEND ACTIVITY</span>
+                    </div>
+                    <div class="section-body" id="quest-invites-list">
+                        <div class="feed-empty">No friend activity right now.</div>
                     </div>
                 </div>
             </div>
