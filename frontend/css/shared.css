@@ -1,7 +1,7 @@
 @keyframes fadeUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(1.25rem);
     }
 
     to {
@@ -29,7 +29,7 @@
     --red: #f87171;
     --pixel: 'Press Start 2P', monospace;
     --body: 'Nunito', sans-serif;
-    --sidebar: 240px;
+    --sidebar: 15rem;
 }
 
 *,
@@ -58,9 +58,9 @@ body::before {
     inset: 0;
     background: repeating-linear-gradient(0deg,
             transparent,
-            transparent 2px,
-            rgba(0, 0, 0, 0.03) 2px,
-            rgba(0, 0, 0, 0.03) 4px);
+            transparent 0.125rem,
+            rgba(0, 0, 0, 0.03) 0.125rem,
+            rgba(0, 0, 0, 0.03) 0.25rem);
     pointer-events: none;
     z-index: 9999;
 }
@@ -68,31 +68,31 @@ body::before {
 .glow-blob {
     position: fixed;
     border-radius: 50%;
-    filter: blur(120px);
+    filter: blur(7.5rem);
     pointer-events: none;
     z-index: 0;
     opacity: 0.18;
 }
 
 .glow-blob-1 {
-    width: 600px;
-    height: 600px;
+    width: 37.5rem;
+    height: 37.5rem;
     background: var(--purple);
-    top: -200px;
-    left: -100px;
+    top: -12.5rem;
+    left: -6.25rem;
 }
 
 .glow-blob-2 {
-    width: 400px;
-    height: 400px;
+    width: 25rem;
+    height: 25rem;
     background: var(--spark);
     bottom: 10%;
-    right: -100px;
+    right: -6.25rem;
 }
 
 .glow-blob-3 {
-    width: 300px;
-    height: 300px;
+    width: 18.75rem;
+    height: 18.75rem;
     background: var(--green);
     top: 50%;
     left: 30%;
@@ -108,15 +108,15 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 40px;
+    padding: 1rem 2.5rem;
     background: rgba(26, 21, 37, 0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(0.75rem);
+    border-bottom: 0.062rem solid var(--border);
 }
 
 .header-logo {
     font-family: var(--pixel);
-    font-size: 11px;
+    font-size: 0.688rem;
     color: var(--glow);
     letter-spacing: 0.04em;
     text-decoration: none;
@@ -124,13 +124,13 @@ header {
 
 .header-play {
     font-family: var(--body);
-    font-size: 13px;
+    font-size: 0.812rem;
     font-weight: 800;
     color: var(--bg);
     background: var(--glow);
     border: none;
-    padding: 9px 20px;
-    border-radius: 6px;
+    padding: 0.562rem 1.25rem;
+    border-radius: 0.375rem;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.2s, transform 0.15s;
@@ -138,12 +138,12 @@ header {
 
 .header-play:hover {
     background: var(--spark);
-    transform: translateY(-1px);
+    transform: translateY(-0.062rem);
 }
 
 .btn-ghost-dashed {
     background: transparent;
-    border: 2px dashed var(--border2);
+    border: 0.125rem dashed var(--border2);
     color: var(--dim);
     transition: border-color 0.2s, color 0.2s, transform 0.15s;
     cursor: default;
@@ -156,13 +156,13 @@ header {
 
 .nav-links {
     display: flex;
-    gap: 38px;
+    gap: 2.375rem;
     list-style: none;
 }
 
 .nav-links a {
     font-family: var(--body);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--dim);
     text-decoration: none;
