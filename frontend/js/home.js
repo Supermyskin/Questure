@@ -106,14 +106,18 @@ async function fetchUserData() {
         const level = xpToLevel(user.xp)
         const user_location = await getCityCountry()
         if (user) {
-            document.getElementById('profile-emoji').textContent = user.emoji;
-            document.getElementById('profile-name-topbar').textContent = `${userName}`;
-            document.getElementById('profile-name').textContent = `${userName}`;
-            document.getElementById('profile-rank').textContent = `${title}`;
-            document.getElementById('pill-xp').textContent = `${user.xp} XP`;
-            document.getElementById('pill-level').textContent = `LV. ${level}`;
-            document.getElementById('active-quests-count').textContent = user.activeQuests.length;
-            document.getElementById('current-location').textContent = user_location;
+            const safeSet = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+            safeSet('profile-emoji', user.emoji);
+            safeSet('profile-name-topbar', `${userName}`);
+            safeSet('profile-name', `${userName}`);
+            safeSet('profile-rank', `${title}`);
+            safeSet('pill-xp', `${user.xp} XP`);
+            safeSet('pill-level', `LV. ${level}`);
+            safeSet('active-quests-count', user.activeQuests.length);
+            safeSet('current-location', user_location);
         }
         return user;
     } catch (err) {
