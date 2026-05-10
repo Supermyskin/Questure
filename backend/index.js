@@ -110,6 +110,11 @@ async function getPublicUsersByIds(userIds) {
   return uniqueIds.map((userId) => usersById.get(userId)).filter(Boolean);
 }
 
+async function getPublicUsersByIdMap(userIds) {
+  const users = await getPublicUsersByIds(userIds);
+  return new Map(users.map((user) => [user.userId, user]));
+}
+
 function getQuestInviteEntry(user, questID) {
   return (user.questInvites || []).find((invite) => invite.questID === questID);
 }
@@ -126,6 +131,35 @@ function setQuestInviteIds(user, questID, invitedUserIds) {
   if (uniqueInvitedUserIds.length > 0) {
     user.questInvites.push({ questID, invitedUserIds: uniqueInvitedUserIds });
   }
+}
+
+async function getQuestInviterIds(userId, questID) {
+  const inviters = await User.find({
+    userId: { $ne: userId },
+    questInvites: {
+      $elemMatch: {
+        questID,
+        invitedUserIds: userId
+      }
+    }
+  }).select('userId');
+
+  return inviters.map((user) => user.userId);
+}
+
+async function getQuestPhotoParticipantIds(userId, questID) {
+  const user = await User.findOne({ userId });
+  if (!user) return null;
+
+  const isOwnQuest = (user.activeQuests || []).includes(questID) || (user.doneQuests || []).includes(questID);
+  const invitedByIds = await getQuestInviterIds(userId, questID);
+  const invitedUserIds = getQuestInviteIds(user, questID);
+
+  if (!isOwnQuest && invitedByIds.length === 0 && invitedUserIds.length === 0) {
+    return null;
+  }
+
+  return [...new Set([userId, ...invitedByIds, ...invitedUserIds])];
 }
 
 mongoose.connect(process.env.MONGO_URI)
@@ -526,6 +560,58 @@ app.get('/quest-invites', async (req, res) => {
   }
 });
 
+app.get('/quest-invite-requests', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const inviters = await User.find({
+      userId: { $ne: userId },
+      questInvites: { $elemMatch: { invitedUserIds: userId } }
+    }).select('userId name emoji xp questInvites activeQuests doneQuests');
+
+    const activeQuestIds = new Set(user.activeQuests || []);
+    const doneQuestIds = new Set(user.doneQuests || []);
+    const requests = [];
+
+    inviters.forEach((inviter) => {
+      (inviter.questInvites || []).forEach((invite) => {
+        if (!(invite.invitedUserIds || []).includes(userId)) return;
+        if (activeQuestIds.has(invite.questID) || doneQuestIds.has(invite.questID)) return;
+        if ((inviter.doneQuests || []).includes(invite.questID)) return;
+
+        requests.push({
+          questID: invite.questID,
+          inviter: toPublicUser(inviter)
+        });
+      });
+    });
+
+    const questIds = [...new Set(requests.map((request) => request.questID))];
+    const quests = await Quest.find({ questID: { $in: questIds } }).select('questID title banner baseXP tags badges');
+    const questsById = new Map(quests.map((quest) => [quest.questID, quest]));
+
+    res.json({
+      invites: requests
+        .map((request) => ({
+          ...request,
+          quest: questsById.get(request.questID)
+        }))
+        .filter((request) => request.quest)
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.post('/invite-friend-to-quest', async (req, res) => {
   try {
     const { userId, questID, friendId } = req.body;
@@ -576,6 +662,54 @@ app.post('/invite-friend-to-quest', async (req, res) => {
       bonusXP: invitedUserIds.length * QUEST_INVITE_BONUS_XP,
       bonusPerFriend: QUEST_INVITE_BONUS_XP
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/accept-quest-invite', async (req, res) => {
+  try {
+    const { userId, questID, inviterId } = req.body;
+    if (!userId || !questID || !inviterId) {
+      return res.status(400).json({ message: "UserID, QuestID, and inviterID are required" });
+    }
+
+    const [user, inviter, quest] = await Promise.all([
+      User.findOne({ userId }),
+      User.findOne({ userId: inviterId }),
+      Quest.findOne({ questID })
+    ]);
+
+    if (!user || !inviter) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!quest) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+
+    if ((user.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already completed" });
+    }
+
+    if ((user.activeQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already accepted" });
+    }
+
+    const invitedUserIds = getQuestInviteIds(inviter, questID);
+    if (!invitedUserIds.includes(userId)) {
+      return res.status(400).json({ message: "Quest invite not found" });
+    }
+
+    if ((inviter.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest invite is no longer active" });
+    }
+
+    user.activeQuests = [...new Set([...(user.activeQuests || []), questID])];
+    await user.save();
+
+    res.json({ message: "Quest invite accepted", quest });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -763,11 +897,27 @@ app.get('/fetch-quest-photos', async (req, res) => {
       return res.status(400).json({ message: "UserID and QuestID are required" });
     }
 
-    const submissions = await QuestSubmission.find({ userId, questID })
-      .sort({ createdAt: -1 })
-      .select('photoUrl createdAt');
+    const participantIds = await getQuestPhotoParticipantIds(userId, questID);
+    if (!participantIds) {
+      return res.status(403).json({ message: "You do not have access to these quest photos" });
+    }
 
-    res.json({ photos: submissions });
+    const submissions = await QuestSubmission.find({ userId: { $in: participantIds }, questID })
+      .sort({ createdAt: -1 })
+      .select('userId photoUrl createdAt');
+
+    const usersById = await getPublicUsersByIdMap(participantIds);
+
+    res.json({
+      photos: submissions.map((submission) => ({
+        _id: submission._id,
+        userId: submission.userId,
+        photoUrl: submission.photoUrl,
+        createdAt: submission.createdAt,
+        owner: usersById.get(submission.userId) || null,
+        canDelete: submission.userId === userId
+      }))
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

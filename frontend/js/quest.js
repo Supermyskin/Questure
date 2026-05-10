@@ -6,6 +6,7 @@ const questState = {
     questID: null,
     accepted: false,
     photoCount: 0,
+    ownPhotoCount: 0,
     submitted: false,
     completed: false,
     bonusXP: 0,
@@ -171,7 +172,7 @@ function updateSubmitButton() {
     const debugResetButton = document.getElementById('btn-debug-reset-quest');
     if (!submitButton || !submitStatus) return;
 
-    const canSubmit = questState.accepted && questState.photoCount > 0 && !questState.completed && !questState.submitted;
+    const canSubmit = questState.accepted && questState.ownPhotoCount > 0 && !questState.completed && !questState.submitted;
 
     submitButton.disabled = !canSubmit;
     submitButton.classList.toggle('btn-ghost-dashed', !canSubmit);
@@ -185,7 +186,7 @@ function updateSubmitButton() {
     } else if (!questState.accepted) {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Accept quest first';
-    } else if (questState.photoCount < 1) {
+    } else if (questState.ownPhotoCount < 1) {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Upload proof first';
     } else if (questState.submitted) {
@@ -310,7 +311,8 @@ function renderQuestPhotos(photos = [], questID = getQuestIDFromURL()) {
 
     gallery.replaceChildren();
     questState.photoCount = photos.length;
-    updateUploadCount(photos.length);
+    questState.ownPhotoCount = photos.filter((photo) => photo.userId === userID).length;
+    updateUploadCount(questState.ownPhotoCount);
     updateSubmitButton();
 
     if (!photos.length) {
@@ -336,18 +338,24 @@ function renderQuestPhotos(photos = [], questID = getQuestIDFromURL()) {
 
         const meta = document.createElement('span');
         meta.className = 'photo-gallery-meta';
-        meta.textContent = photo.createdAt ? new Date(photo.createdAt).toLocaleDateString() : 'Uploaded';
-
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.className = 'photo-remove-btn';
-        removeButton.title = 'Remove photo';
-        removeButton.setAttribute('aria-label', `Remove quest proof photo ${index + 1}`);
-        removeButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
-        removeButton.onclick = () => deleteQuestPhoto(photo._id, questID);
+        const ownerName = photo.owner?.name || (photo.userId === userID ? 'You' : 'Friend');
+        const uploadDate = photo.createdAt ? new Date(photo.createdAt).toLocaleDateString() : 'Uploaded';
+        meta.textContent = `${ownerName} · ${uploadDate}`;
 
         link.append(image, meta);
-        item.append(link, removeButton);
+        item.appendChild(link);
+
+        if (photo.canDelete !== false && photo.userId === userID) {
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'photo-remove-btn';
+            removeButton.title = 'Remove photo';
+            removeButton.setAttribute('aria-label', `Remove quest proof photo ${index + 1}`);
+            removeButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            removeButton.onclick = () => deleteQuestPhoto(photo._id, questID);
+            item.appendChild(removeButton);
+        }
+
         gallery.appendChild(item);
     });
 }
@@ -602,7 +610,7 @@ async function abandonQuest(questID) {
 }
 
 async function submitQuest(questID) {
-    if (!questState.accepted || questState.photoCount < 1 || questState.completed) {
+    if (!questState.accepted || questState.ownPhotoCount < 1 || questState.completed) {
         updateSubmitButton();
         return;
     }

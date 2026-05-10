@@ -1,13 +1,13 @@
 const http = require('http');
 
 const questData = {
-  questID: "QST00001",
-  title: "Welcome Traveler",
-  banner: "✨",
-  description: "Complete your first mission to earn XP.",
-  tags: ["tutorial", "beginner"],
-  badges: ["easy"],
-  baseXP: 100
+  questID: "QST00002",
+  title: "Order in a language you don't speak",
+  banner: "☕️",
+  description: "Find a café, restaurant, or food stall. Order something using zero English (or your native language) and strike up a conversation with the server. No Google Translate allowed. Whatever happens, happens.",
+  tags: ["social", "food", "communication", "awkward"],
+  badges: ["easy", "solo", "group"],
+  baseXP: 120
 };
 
 const data = JSON.stringify(questData);

@@ -433,6 +433,12 @@
     transform: translateY(-0.062rem);
 }
 
+.btn-sm-primary:disabled {
+    cursor: default;
+    opacity: 0.65;
+    transform: none;
+}
+
 .btn-sm-ghost {
     background: transparent;
     color: var(--muted);
@@ -451,11 +457,18 @@
     color: var(--text);
 }
 
+.feed-panel {
+    background: var(--surface);
+    border: 0.062rem solid var(--border);
+    border-radius: 0.625rem;
+    padding: 0.25rem 1rem;
+}
+
 .feed-item {
     display: flex;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
+    gap: 0.75rem;
+    padding: 0.875rem 0;
+    border-bottom: 0.062rem solid var(--border);
     align-items: flex-start;
 }
 
@@ -464,28 +477,29 @@
 }
 
 .feed-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
     background: var(--surface2);
-    border: 1px solid var(--border2);
+    border: 0.062rem solid var(--border2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 
 .feed-content {
     flex: 1;
+    min-width: 0;
 }
 
 .feed-text {
-    font-size: 13px;
+    font-size: 0.812rem;
     color: var(--muted);
     font-weight: 600;
     line-height: 1.5;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .feed-text strong {
@@ -496,4 +510,16 @@
 .feed-text .quest-name {
     color: var(--glow);
     font-weight: 700;
+}
+
+.feed-meta,
+.feed-empty {
+    color: var(--dim);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.feed-empty {
+    padding: 0.875rem 0;
+    text-align: center;
 }

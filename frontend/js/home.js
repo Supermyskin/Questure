@@ -44,6 +44,34 @@ function xpToLevel(xp) {
     return 1;
 }
 
+function escapeHTML(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
+async function getErrorMessage(response, fallback) {
+    try {
+        const data = await response.json();
+        return data.message || fallback;
+    } catch (err) {
+        return fallback;
+    }
+}
+
+async function fetchJSON(url, options = {}) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(await getErrorMessage(response, `Request failed with ${response.status}`));
+    }
+
+    return response.json();
+}
+
 function getUserLocation() {
     return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -103,6 +131,81 @@ async function getPhotoCount(userID, questID) {
     } catch (err) {
         console.error("Error fetching photo count:", err);
         return 0;
+    }
+}
+
+function renderQuestInvites(invites = []) {
+    const invitesList = document.getElementById('quest-invites-list');
+    const dot = document.querySelector('.notif-dot');
+    if (!invitesList) return;
+
+    if (dot) dot.hidden = invites.length === 0;
+
+    if (invites.length === 0) {
+        invitesList.innerHTML = '<div class="feed-empty">No quest invites right now.</div>';
+        return;
+    }
+
+    invitesList.innerHTML = invites.map((invite) => {
+        const quest = invite.quest || {};
+        const inviter = invite.inviter || {};
+        return `
+            <div class="feed-item">
+                <div class="feed-avatar">${escapeHTML(inviter.emoji || '❔')}</div>
+                <div class="feed-content">
+                    <p class="feed-text">
+                        <strong>${escapeHTML(inviter.name || 'Friend')}</strong> invited you to
+                        <span class="quest-name">"${escapeHTML(quest.title || 'Quest')}"</span>
+                    </p>
+                    <div class="feed-meta">+${quest.baseXP || 0} XP base reward</div>
+                </div>
+                <button class="btn-sm-primary accept-quest-invite-btn"
+                    data-quest-id="${escapeHTML(invite.questID)}"
+                    data-inviter-id="${escapeHTML(inviter.userId)}">Join</button>
+            </div>
+        `;
+    }).join('');
+
+    document.querySelectorAll('.accept-quest-invite-btn').forEach((button) => {
+        button.addEventListener('click', () => acceptQuestInvite(button));
+    });
+}
+
+async function fetchQuestInvites() {
+    try {
+        const data = await fetchJSON(`${API_URL}/quest-invite-requests?userID=${encodeURIComponent(userID)}`);
+        renderQuestInvites(data.invites || []);
+    } catch (err) {
+        console.error("Error fetching quest invites:", err);
+        const invitesList = document.getElementById('quest-invites-list');
+        if (invitesList) {
+            invitesList.innerHTML = `<div class="feed-empty">${escapeHTML(err.message || 'Could not load quest invites.')}</div>`;
+        }
+    }
+}
+
+async function acceptQuestInvite(button) {
+    const questID = button.getAttribute('data-quest-id');
+    const inviterId = button.getAttribute('data-inviter-id');
+    if (!questID || !inviterId) return;
+
+    button.disabled = true;
+    button.textContent = 'Joining...';
+
+    try {
+        await fetchJSON(`${API_URL}/accept-quest-invite`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID, inviterId })
+        });
+
+        await fetchAndDisplayActiveQuests();
+        await fetchQuestInvites();
+    } catch (err) {
+        console.error("Error accepting quest invite:", err);
+        alert(err.message || 'Could not accept quest invite.');
+        button.disabled = false;
+        button.textContent = 'Join';
     }
 }
 
@@ -192,3 +295,4 @@ async function fetchAndDisplayActiveQuests() {
 }
 
 fetchAndDisplayActiveQuests();
+fetchQuestInvites();
