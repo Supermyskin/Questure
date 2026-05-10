@@ -86,5 +86,4 @@ async function getErrorMessage(response, fallback) {
     }
 }
 
-
 fetchUserData();
