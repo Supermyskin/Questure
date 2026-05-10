@@ -150,12 +150,20 @@
                         <div id="photo-gallery" class="photo-gallery" aria-live="polite"></div>
                     </div>
                 </div>
-                <div class="section-body">
-                    <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:14px">
-                        Accept the quest first, then invite friends to join your session and unlock the squad XP bonus.
-                    </p>
-                    <button class="btn-invite" style="opacity:0.4;pointer-events:none;cursor:not-allowed">＋ Invite
-                        friends (locked)</button>
+                <div class="section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// Invite Friends</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--dim)" id="invite-status">Locked</span>
+                    </div>
+                    <div class="section-body">
+                        <p class="invite-copy" id="invite-copy">
+                            Accept the quest first, then invite friends to join your session and unlock the squad XP bonus.
+                        </p>
+                        <div class="invite-bonus" id="invite-bonus">+0 XP squad bonus</div>
+                        <div id="invite-list" class="invite-list" aria-live="polite">
+                            <div class="list-empty">Invite friends after accepting this quest.</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="section">
                     <div class="section-header">

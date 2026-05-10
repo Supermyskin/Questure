@@ -7,7 +7,11 @@ const questState = {
     accepted: false,
     photoCount: 0,
     submitted: false,
-    completed: false
+    completed: false,
+    bonusXP: 0,
+    bonusPerFriend: 0,
+    invitedFriends: [],
+    availableFriends: []
 };
 
 const thresholds = [
@@ -153,6 +157,7 @@ function renderQuestError(message) {
     document.getElementById('xp-amount').textContent = '+0 XP';
     renderQuestBadges([]);
     renderQuestTags([]);
+    renderInvitePanel();
 }
 
 function updateUploadCount(count) {
@@ -189,6 +194,112 @@ function updateSubmitButton() {
     } else {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Ready';
+    }
+}
+
+function setInviteText(id, text) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = text;
+}
+
+function renderInvitePanel() {
+    const inviteList = document.getElementById('invite-list');
+    const inviteBonus = document.getElementById('invite-bonus');
+    if (!inviteList || !inviteBonus) return;
+
+    if (questState.completed) {
+        setInviteText('invite-status', 'Completed');
+        setInviteText('invite-copy', 'This quest is complete.');
+        inviteBonus.textContent = `+${questState.bonusXP || 0} XP squad bonus`;
+        inviteList.innerHTML = '<div class="list-empty">Quest invites are closed.</div>';
+        return;
+    }
+
+    if (!questState.accepted) {
+        setInviteText('invite-status', 'Locked');
+        setInviteText('invite-copy', 'Accept the quest first, then invite friends to join your session and unlock the squad XP bonus.');
+        inviteBonus.textContent = '+0 XP squad bonus';
+        inviteList.innerHTML = '<div class="list-empty">Invite friends after accepting this quest.</div>';
+        return;
+    }
+
+    const friends = Array.isArray(questState.availableFriends) ? questState.availableFriends : [];
+    const invitedCount = friends.filter((friend) => friend.invited).length;
+    const bonusPerFriend = questState.bonusPerFriend || 0;
+
+    setInviteText('invite-status', invitedCount === 1 ? '1 invited' : `${invitedCount} invited`);
+    setInviteText('invite-copy', `Each invited friend adds +${bonusPerFriend} XP when you finish this quest.`);
+    inviteBonus.textContent = `+${questState.bonusXP || 0} XP squad bonus`;
+
+    if (friends.length === 0) {
+        inviteList.innerHTML = '<div class="list-empty">Add friends first, then invite them to this quest.</div>';
+        return;
+    }
+
+    inviteList.replaceChildren();
+    friends.forEach((friend) => {
+        const item = document.createElement('div');
+        item.className = 'invite-friend';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'invite-avatar';
+        avatar.textContent = friend.emoji || '?';
+
+        const info = document.createElement('div');
+        info.className = 'invite-info';
+
+        const name = document.createElement('div');
+        name.className = 'invite-name';
+        name.textContent = friend.name || 'Friend';
+
+        const stats = document.createElement('div');
+        stats.className = 'invite-stats';
+        stats.textContent = `LV.${xpToLevel(friend.xp || 0)} · ${friend.xp || 0} XP`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = friend.invited ? 'btn-invite invited' : 'btn-invite';
+        button.disabled = Boolean(friend.invited);
+        button.dataset.userId = friend.userId;
+        button.innerHTML = friend.invited
+            ? '<i class="fa-solid fa-check"></i> Invited'
+            : '<i class="fa-solid fa-user-plus"></i> Invite';
+
+        info.append(name, stats);
+        item.append(avatar, info, button);
+        inviteList.appendChild(item);
+    });
+}
+
+async function fetchQuestInvites(questID) {
+    if (!userID || !questID || !questState.accepted || questState.completed) {
+        renderInvitePanel();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/quest-invites?userID=${encodeURIComponent(userID)}&questID=${encodeURIComponent(questID)}`);
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to load quest invites.'));
+        }
+
+        const data = await response.json();
+        questState.bonusXP = data.bonusXP || 0;
+        questState.bonusPerFriend = data.bonusPerFriend || 0;
+        questState.invitedFriends = Array.isArray(data.invitedFriends) ? data.invitedFriends : [];
+        questState.availableFriends = Array.isArray(data.availableFriends) ? data.availableFriends : [];
+        renderInvitePanel();
+    } catch (err) {
+        console.error("Error fetching quest invites:", err);
+        setInviteText('invite-status', 'Failed');
+        const inviteList = document.getElementById('invite-list');
+        if (inviteList) {
+            inviteList.replaceChildren();
+            const empty = document.createElement('div');
+            empty.className = 'list-empty';
+            empty.textContent = err.message || 'Could not load invites.';
+            inviteList.appendChild(empty);
+        }
     }
 }
 
@@ -303,6 +414,9 @@ async function fetchQuestData() {
         questState.accepted = isAccepted;
         questState.completed = isCompleted;
         questState.submitted = false;
+        questState.bonusXP = 0;
+        questState.availableFriends = [];
+        questState.invitedFriends = [];
 
         const acceptBtn = document.querySelector('.btn-complete');
         const acceptedBtn = document.querySelector('.btn-accepted');
@@ -336,11 +450,44 @@ async function fetchQuestData() {
         abandonBtn.onclick = () => abandonQuest(questID);
         submitBtn.onclick = () => submitQuest(questID);
         debugResetBtn.onclick = () => debugResetQuestCompletion(questID);
+        document.getElementById('invite-list')?.addEventListener('click', (event) => {
+            const button = event.target.closest('.btn-invite');
+            if (!button || button.disabled) return;
+            inviteFriendToQuest(questID, button.dataset.userId, button);
+        });
         updateSubmitButton();
+        await fetchQuestInvites(questID);
     } catch (err) {
 
         console.error("Error fetching quest data:", err);
         renderQuestError(err.message || 'Could not load this quest.');
+    }
+}
+
+async function inviteFriendToQuest(questID, friendId, button) {
+    if (!questState.accepted || questState.completed || !friendId) return;
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Inviting';
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/invite-friend-to-quest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID, friendId })
+        });
+
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to invite friend.'));
+        }
+
+        await fetchQuestInvites(questID);
+    } catch (err) {
+        console.error("Error inviting friend:", err);
+        alert(err.message);
+        await fetchQuestInvites(questID);
     }
 }
 
@@ -476,7 +623,8 @@ async function submitQuest(questID) {
         questState.submitted = true;
         questState.completed = true;
 
-        alert(`Quest completed! +${data.awardedXP || 0} XP`);
+        const bonusText = data.bonusXP ? ` (${data.baseXP || 0} base + ${data.bonusXP} bonus)` : '';
+        alert(`Quest completed! +${data.awardedXP || 0} XP${bonusText}`);
         await fetchUserData();
         updateSubmitButton();
         location.reload();

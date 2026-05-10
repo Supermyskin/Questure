@@ -20,6 +20,7 @@ cloudinary.config({
 });
 
 const upload = multer();
+const QUEST_INVITE_BONUS_XP = 25;
 
 const emojis = [
   '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
@@ -56,6 +57,13 @@ const userSchema = new mongoose.Schema({
       questID: { type: String, required: true },
       completedAt: { type: Date, required: true },
       cooldownUntil: { type: Date, required: true }
+    }],
+    default: []
+  },
+  questInvites: {
+    type: [{
+      questID: { type: String, required: true },
+      invitedUserIds: { type: [String], default: [] }
     }],
     default: []
   }
@@ -100,6 +108,24 @@ async function getPublicUsersByIds(userIds) {
     .select('userId name emoji xp');
   const usersById = new Map(users.map((user) => [user.userId, toPublicUser(user)]));
   return uniqueIds.map((userId) => usersById.get(userId)).filter(Boolean);
+}
+
+function getQuestInviteEntry(user, questID) {
+  return (user.questInvites || []).find((invite) => invite.questID === questID);
+}
+
+function getQuestInviteIds(user, questID) {
+  const invite = getQuestInviteEntry(user, questID);
+  return [...new Set((invite?.invitedUserIds || []).filter(Boolean))];
+}
+
+function setQuestInviteIds(user, questID, invitedUserIds) {
+  const uniqueInvitedUserIds = [...new Set((invitedUserIds || []).filter(Boolean))];
+  user.questInvites = (user.questInvites || []).filter((invite) => invite.questID !== questID);
+
+  if (uniqueInvitedUserIds.length > 0) {
+    user.questInvites.push({ questID, invitedUserIds: uniqueInvitedUserIds });
+  }
 }
 
 mongoose.connect(process.env.MONGO_URI)
@@ -178,7 +204,8 @@ app.get('/fetch-user-info', async (req, res) => {
       xp: user.xp || 0,
       activeQuests: user.activeQuests || [],
       doneQuests: user.doneQuests || [],
-      questCooldowns: user.questCooldowns || []
+      questCooldowns: user.questCooldowns || [],
+      questInvites: user.questInvites || []
     });
   } catch (err) {
     console.error(err);
@@ -452,9 +479,103 @@ app.post('/abandon-quest', async (req, res) => {
     }
 
     user.activeQuests = user.activeQuests.filter((activeQuestID) => activeQuestID !== questID);
+    user.questInvites = (user.questInvites || []).filter((invite) => invite.questID !== questID);
     await user.save();
 
     res.json({ message: "Quest abandoned successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/quest-invites', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    const questID = req.query.questID || req.query.id;
+    if (!userId || !questID) {
+      return res.status(400).json({ message: "UserID and QuestID are required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const invitedUserIds = getQuestInviteIds(user, questID).filter((invitedUserId) => {
+      return (user.friends || []).includes(invitedUserId);
+    });
+    const [friends, invitedFriends] = await Promise.all([
+      getPublicUsersByIds(user.friends),
+      getPublicUsersByIds(invitedUserIds)
+    ]);
+    const invitedIdSet = new Set(invitedUserIds);
+
+    res.json({
+      bonusPerFriend: QUEST_INVITE_BONUS_XP,
+      bonusXP: invitedUserIds.length * QUEST_INVITE_BONUS_XP,
+      invitedFriends,
+      availableFriends: friends.map((friend) => ({
+        ...friend,
+        invited: invitedIdSet.has(friend.userId)
+      }))
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/invite-friend-to-quest', async (req, res) => {
+  try {
+    const { userId, questID, friendId } = req.body;
+    if (!userId || !questID || !friendId) {
+      return res.status(400).json({ message: "UserID, QuestID, and friendID are required" });
+    }
+
+    if (userId === friendId) {
+      return res.status(400).json({ message: "You cannot invite yourself" });
+    }
+
+    const [user, friend, quest] = await Promise.all([
+      User.findOne({ userId }),
+      User.findOne({ userId: friendId }),
+      Quest.findOne({ questID })
+    ]);
+
+    if (!user || !friend) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!quest) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+
+    if ((user.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Quest already completed" });
+    }
+
+    if (!(user.activeQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "Accept the quest before inviting friends" });
+    }
+
+    if (!(user.friends || []).includes(friendId)) {
+      return res.status(400).json({ message: "Only friends can be invited to quests" });
+    }
+
+    const invitedUserIds = getQuestInviteIds(user, questID);
+    if (!invitedUserIds.includes(friendId)) {
+      invitedUserIds.push(friendId);
+      setQuestInviteIds(user, questID, invitedUserIds);
+      await user.save();
+    }
+
+    res.json({
+      message: "Friend invited to quest",
+      invitedFriend: toPublicUser(friend),
+      bonusXP: invitedUserIds.length * QUEST_INVITE_BONUS_XP,
+      bonusPerFriend: QUEST_INVITE_BONUS_XP
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -491,9 +612,17 @@ app.post('/submit-quest', async (req, res) => {
       return res.status(400).json({ message: "Upload at least one photo before submitting" });
     }
 
-    user.xp = (user.xp || 0) + (quest.baseXP || 0);
+    const invitedUserIds = getQuestInviteIds(user, questID).filter((invitedUserId) => {
+      return (user.friends || []).includes(invitedUserId);
+    });
+    const baseXP = quest.baseXP || 0;
+    const bonusXP = invitedUserIds.length * QUEST_INVITE_BONUS_XP;
+    const awardedXP = baseXP + bonusXP;
+
+    user.xp = (user.xp || 0) + awardedXP;
     user.activeQuests = user.activeQuests.filter((activeQuestID) => activeQuestID !== questID);
     user.questCooldowns = (user.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
+    user.questInvites = (user.questInvites || []).filter((invite) => invite.questID !== questID);
     user.doneQuests = user.doneQuests || [];
     if (!user.doneQuests.includes(questID)) {
       user.doneQuests.push(questID);
@@ -503,7 +632,10 @@ app.post('/submit-quest', async (req, res) => {
 
     res.json({
       message: "Quest submitted successfully",
-      awardedXP: quest.baseXP || 0,
+      awardedXP,
+      baseXP,
+      bonusXP,
+      invitedFriendCount: invitedUserIds.length,
       xp: user.xp
     });
   } catch (err) {
@@ -527,6 +659,7 @@ app.post('/debug-reset-quest-completion', async (req, res) => {
     user.doneQuests = (user.doneQuests || []).filter((doneQuestID) => doneQuestID !== questID);
     user.activeQuests = (user.activeQuests || []).filter((activeQuestID) => activeQuestID !== questID);
     user.questCooldowns = (user.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
+    user.questInvites = (user.questInvites || []).filter((invite) => invite.questID !== questID);
     await user.save();
 
     res.json({ message: "Quest completion reset for debugging" });

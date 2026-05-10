@@ -450,3 +450,50 @@
     border-color: var(--glow);
     color: var(--text);
 }
+
+.feed-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+}
+
+.feed-item:last-child {
+    border-bottom: none;
+}
+
+.feed-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.feed-content {
+    flex: 1;
+}
+
+.feed-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
+.feed-text strong {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.feed-text .quest-name {
+    color: var(--glow);
+    font-weight: 700;
+}
