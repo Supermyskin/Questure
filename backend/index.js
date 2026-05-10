@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   emoji: { type: String, required: true },
   xp: { type: Number, default: 0 },
+  friends: { type: [String], default: [] },
+  incomingFriendRequests: { type: [String], default: [] },
+  outgoingFriendRequests: { type: [String], default: [] },
   activeQuests: { type: [String], default: [] },
   doneQuests: { type: [String], default: [] },
   questCooldowns: {
@@ -79,6 +82,25 @@ const questSubmissionSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Quest = mongoose.model('Quest', questSchema);
 const QuestSubmission = mongoose.model('QuestSubmission', questSubmissionSchema);
+
+function toPublicUser(user) {
+  return {
+    userId: user.userId,
+    name: user.name,
+    emoji: user.emoji || '❔',
+    xp: user.xp || 0
+  };
+}
+
+async function getPublicUsersByIds(userIds) {
+  const uniqueIds = [...new Set((userIds || []).filter(Boolean))];
+  if (uniqueIds.length === 0) return [];
+
+  const users = await User.find({ userId: { $in: uniqueIds } })
+    .select('userId name emoji xp');
+  const usersById = new Map(users.map((user) => [user.userId, toPublicUser(user)]));
+  return uniqueIds.map((userId) => usersById.get(userId)).filter(Boolean);
+}
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -158,6 +180,196 @@ app.get('/fetch-user-info', async (req, res) => {
       doneQuests: user.doneQuests || [],
       questCooldowns: user.questCooldowns || []
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/friends', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const [friends, incomingRequests, outgoingRequests] = await Promise.all([
+      getPublicUsersByIds(user.friends),
+      getPublicUsersByIds(user.incomingFriendRequests),
+      getPublicUsersByIds(user.outgoingFriendRequests)
+    ]);
+
+    res.json({ friends, incomingRequests, outgoingRequests });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/search-users', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    const query = (req.query.q || '').trim();
+
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    if (query.length < 2) {
+      return res.json({ users: [] });
+    }
+
+    const currentUser = await User.findOne({ userId });
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const users = await User.find({
+      userId: { $ne: userId },
+      $or: [
+        { name: { $regex: escapedQuery, $options: 'i' } },
+        { email: { $regex: escapedQuery, $options: 'i' } }
+      ]
+    })
+      .select('userId name emoji xp')
+      .limit(10);
+
+    const friendIds = new Set(currentUser.friends || []);
+    const incomingIds = new Set(currentUser.incomingFriendRequests || []);
+    const outgoingIds = new Set(currentUser.outgoingFriendRequests || []);
+
+    res.json({
+      users: users.map((user) => {
+        let status = 'none';
+        if (friendIds.has(user.userId)) status = 'friend';
+        else if (incomingIds.has(user.userId)) status = 'incoming';
+        else if (outgoingIds.has(user.userId)) status = 'outgoing';
+
+        return { ...toPublicUser(user), status };
+      })
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/send-friend-request', async (req, res) => {
+  try {
+    const { userId, targetUserId } = req.body;
+    if (!userId || !targetUserId) {
+      return res.status(400).json({ message: "UserID and targetUserID are required" });
+    }
+
+    if (userId === targetUserId) {
+      return res.status(400).json({ message: "You cannot add yourself as a friend" });
+    }
+
+    const [user, targetUser] = await Promise.all([
+      User.findOne({ userId }),
+      User.findOne({ userId: targetUserId })
+    ]);
+
+    if (!user || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if ((user.friends || []).includes(targetUserId)) {
+      return res.status(400).json({ message: "You are already friends" });
+    }
+
+    if ((user.incomingFriendRequests || []).includes(targetUserId)) {
+      user.incomingFriendRequests = user.incomingFriendRequests.filter((id) => id !== targetUserId);
+      targetUser.outgoingFriendRequests = (targetUser.outgoingFriendRequests || []).filter((id) => id !== userId);
+      user.friends = [...new Set([...(user.friends || []), targetUserId])];
+      targetUser.friends = [...new Set([...(targetUser.friends || []), userId])];
+      await Promise.all([user.save(), targetUser.save()]);
+      return res.json({ message: "Friend request accepted" });
+    }
+
+    if ((user.outgoingFriendRequests || []).includes(targetUserId)) {
+      return res.status(400).json({ message: "Friend request already sent" });
+    }
+
+    user.outgoingFriendRequests = [...new Set([...(user.outgoingFriendRequests || []), targetUserId])];
+    targetUser.incomingFriendRequests = [...new Set([...(targetUser.incomingFriendRequests || []), userId])];
+
+    await Promise.all([user.save(), targetUser.save()]);
+    res.json({ message: "Friend request sent" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/respond-friend-request', async (req, res) => {
+  try {
+    const { userId, requesterId, action } = req.body;
+    if (!userId || !requesterId || !['accept', 'deny'].includes(action)) {
+      return res.status(400).json({ message: "UserID, requesterID, and valid action are required" });
+    }
+
+    const [user, requester] = await Promise.all([
+      User.findOne({ userId }),
+      User.findOne({ userId: requesterId })
+    ]);
+
+    if (!user || !requester) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!(user.incomingFriendRequests || []).includes(requesterId)) {
+      return res.status(400).json({ message: "Friend request not found" });
+    }
+
+    user.incomingFriendRequests = user.incomingFriendRequests.filter((id) => id !== requesterId);
+    requester.outgoingFriendRequests = (requester.outgoingFriendRequests || []).filter((id) => id !== userId);
+
+    if (action === 'accept') {
+      user.friends = [...new Set([...(user.friends || []), requesterId])];
+      requester.friends = [...new Set([...(requester.friends || []), userId])];
+    }
+
+    await Promise.all([user.save(), requester.save()]);
+    res.json({ message: action === 'accept' ? "Friend request accepted" : "Friend request denied" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete('/friends/:friendId', async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const { userId } = req.body;
+    if (!userId || !friendId) {
+      return res.status(400).json({ message: "UserID and friendID are required" });
+    }
+
+    const [user, friend] = await Promise.all([
+      User.findOne({ userId }),
+      User.findOne({ userId: friendId })
+    ]);
+
+    if (!user || !friend) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.friends = (user.friends || []).filter((id) => id !== friendId);
+    friend.friends = (friend.friends || []).filter((id) => id !== userId);
+    user.incomingFriendRequests = (user.incomingFriendRequests || []).filter((id) => id !== friendId);
+    user.outgoingFriendRequests = (user.outgoingFriendRequests || []).filter((id) => id !== friendId);
+    friend.incomingFriendRequests = (friend.incomingFriendRequests || []).filter((id) => id !== userId);
+    friend.outgoingFriendRequests = (friend.outgoingFriendRequests || []).filter((id) => id !== userId);
+
+    await Promise.all([user.save(), friend.save()]);
+    res.json({ message: "Friend removed" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

@@ -446,6 +446,13 @@
     gap: 6px;
 }
 
+.list-empty {
+    color: var(--dim);
+    font-size: 0.812rem;
+    font-weight: 700;
+    padding: 0.875rem 0.25rem;
+}
+
 .btn-accept {
     background: var(--green);
     color: var(--bg);
@@ -582,4 +589,33 @@
 .btn-sm-ghost:hover {
     border-color: var(--glow);
     color: var(--text);
+}
+
+.btn-sm-ghost:disabled,
+.btn-accept:disabled,
+.btn-deny:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.btn-sm-danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+@media (max-width: 700px) {
+    .request-item,
+    .friend-item {
+        align-items: flex-start;
+    }
+
+    .request-actions,
+    .friend-actions {
+        flex-direction: column;
+    }
 }
