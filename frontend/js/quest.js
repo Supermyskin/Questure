@@ -11,6 +11,7 @@ const questState = {
     completed: false,
     bonusXP: 0,
     bonusPerFriend: 0,
+    canInvite: true,
     invitedFriends: [],
     availableFriends: []
 };
@@ -229,7 +230,12 @@ function renderInvitePanel() {
     const bonusPerFriend = questState.bonusPerFriend || 0;
 
     setInviteText('invite-status', invitedCount === 1 ? '1 invited' : `${invitedCount} invited`);
-    setInviteText('invite-copy', `Each invited friend adds +${bonusPerFriend} XP when you finish this quest.`);
+    setInviteText(
+        'invite-copy',
+        questState.canInvite
+            ? `Each invited friend adds +${bonusPerFriend} XP when you finish this quest.`
+            : 'You joined this quest through an invite, so only the original inviter can add more party members.'
+    );
     inviteBonus.textContent = `+${questState.bonusXP || 0} XP squad bonus`;
 
     if (friends.length === 0) {
@@ -257,14 +263,25 @@ function renderInvitePanel() {
         stats.className = 'invite-stats';
         stats.textContent = `LV.${xpToLevel(friend.xp || 0)} · ${friend.xp || 0} XP`;
 
+        let inviteLabel = '<i class="fa-solid fa-user-plus"></i> Invite';
+        let isDisabled = !questState.canInvite;
+        if (friend.invited) {
+            inviteLabel = '<i class="fa-solid fa-check"></i> Invited';
+            isDisabled = true;
+        } else if (friend.questCompleted) {
+            inviteLabel = '<i class="fa-solid fa-check"></i> Completed';
+            isDisabled = true;
+        } else if (friend.questAccepted) {
+            inviteLabel = '<i class="fa-solid fa-check"></i> Accepted';
+            isDisabled = true;
+        }
+
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = friend.invited ? 'btn-invite invited' : 'btn-invite';
-        button.disabled = Boolean(friend.invited);
+        button.className = isDisabled ? 'btn-invite invited' : 'btn-invite';
+        button.disabled = isDisabled;
         button.dataset.userId = friend.userId;
-        button.innerHTML = friend.invited
-            ? '<i class="fa-solid fa-check"></i> Invited'
-            : '<i class="fa-solid fa-user-plus"></i> Invite';
+        button.innerHTML = inviteLabel;
 
         info.append(name, stats);
         item.append(avatar, info, button);
@@ -285,6 +302,7 @@ async function fetchQuestInvites(questID) {
         }
 
         const data = await response.json();
+        questState.canInvite = data.canInvite !== false;
         questState.bonusXP = data.bonusXP || 0;
         questState.bonusPerFriend = data.bonusPerFriend || 0;
         questState.invitedFriends = Array.isArray(data.invitedFriends) ? data.invitedFriends : [];
@@ -423,6 +441,7 @@ async function fetchQuestData() {
         questState.completed = isCompleted;
         questState.submitted = false;
         questState.bonusXP = 0;
+        questState.canInvite = true;
         questState.availableFriends = [];
         questState.invitedFriends = [];
 

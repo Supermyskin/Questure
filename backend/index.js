@@ -87,9 +87,17 @@ const questSubmissionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const questPartySchema = new mongoose.Schema({
+  questID: { type: String, required: true },
+  ownerId: { type: String, required: true },
+  memberIds: { type: [String], default: [] },
+  completedAt: { type: Date }
+});
+
 const User = mongoose.model('User', userSchema);
 const Quest = mongoose.model('Quest', questSchema);
 const QuestSubmission = mongoose.model('QuestSubmission', questSubmissionSchema);
+const QuestParty = mongoose.model('QuestParty', questPartySchema);
 
 function toPublicUser(user) {
   return {
@@ -147,19 +155,64 @@ async function getQuestInviterIds(userId, questID) {
   return inviters.map((user) => user.userId);
 }
 
+async function getQuestPartyMemberIds(userId, questID) {
+  const savedParty = await QuestParty.findOne({ questID, memberIds: userId });
+  if (savedParty) {
+    return [...new Set(savedParty.memberIds || [])];
+  }
+
+  const inviters = await User.find({
+    questInvites: { $elemMatch: { questID } }
+  }).select('userId questInvites');
+
+  const inviteEdges = inviters.map((inviter) => ({
+    inviterId: inviter.userId,
+    invitedUserIds: getQuestInviteIds(inviter, questID)
+  }));
+  const partyIds = new Set([userId]);
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    inviteEdges.forEach(({ inviterId, invitedUserIds }) => {
+      const isConnected = partyIds.has(inviterId) || invitedUserIds.some((invitedUserId) => partyIds.has(invitedUserId));
+      if (!isConnected) return;
+
+      [inviterId, ...invitedUserIds].forEach((partyId) => {
+        if (!partyIds.has(partyId)) {
+          partyIds.add(partyId);
+          changed = true;
+        }
+      });
+    });
+  }
+
+  return [...partyIds];
+}
+
+async function getOrCreateQuestParty(ownerId, questID) {
+  let party = await QuestParty.findOne({ ownerId, questID, completedAt: { $exists: false } });
+  if (!party) {
+    party = new QuestParty({ ownerId, questID, memberIds: [ownerId] });
+  }
+
+  party.memberIds = [...new Set([...(party.memberIds || []), ownerId])];
+  return party;
+}
+
 async function getQuestPhotoParticipantIds(userId, questID) {
   const user = await User.findOne({ userId });
   if (!user) return null;
 
   const isOwnQuest = (user.activeQuests || []).includes(questID) || (user.doneQuests || []).includes(questID);
-  const invitedByIds = await getQuestInviterIds(userId, questID);
-  const invitedUserIds = getQuestInviteIds(user, questID);
+  const partyIds = await getQuestPartyMemberIds(userId, questID);
 
-  if (!isOwnQuest && invitedByIds.length === 0 && invitedUserIds.length === 0) {
+  if (!isOwnQuest && partyIds.length <= 1) {
     return null;
   }
 
-  return [...new Set([userId, ...invitedByIds, ...invitedUserIds])];
+  return partyIds;
 }
 
 mongoose.connect(process.env.MONGO_URI)
@@ -536,22 +589,31 @@ app.get('/quest-invites', async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const party = await QuestParty.findOne({ questID, memberIds: userId });
+    const inviterIds = party ? [] : await getQuestInviterIds(userId, questID);
     const invitedUserIds = getQuestInviteIds(user, questID).filter((invitedUserId) => {
       return (user.friends || []).includes(invitedUserId);
     });
+    const acceptedPartyFriendIds = (party?.memberIds || []).filter((memberId) => {
+      return memberId !== userId && (user.friends || []).includes(memberId);
+    });
+    const bonusUserIds = [...new Set([...invitedUserIds, ...acceptedPartyFriendIds])];
     const [friends, invitedFriends] = await Promise.all([
-      getPublicUsersByIds(user.friends),
-      getPublicUsersByIds(invitedUserIds)
+      User.find({ userId: { $in: user.friends || [] } }).select('userId name emoji xp activeQuests doneQuests'),
+      getPublicUsersByIds(bonusUserIds)
     ]);
     const invitedIdSet = new Set(invitedUserIds);
 
     res.json({
+      canInvite: party ? party.ownerId === userId : inviterIds.length === 0,
       bonusPerFriend: QUEST_INVITE_BONUS_XP,
-      bonusXP: invitedUserIds.length * QUEST_INVITE_BONUS_XP,
+      bonusXP: bonusUserIds.length * QUEST_INVITE_BONUS_XP,
       invitedFriends,
       availableFriends: friends.map((friend) => ({
-        ...friend,
-        invited: invitedIdSet.has(friend.userId)
+        ...toPublicUser(friend),
+        invited: invitedIdSet.has(friend.userId),
+        questAccepted: (friend.activeQuests || []).includes(questID),
+        questCompleted: (friend.doneQuests || []).includes(questID)
       }))
     });
   } catch (err) {
@@ -641,6 +703,12 @@ app.post('/invite-friend-to-quest', async (req, res) => {
       return res.status(400).json({ message: "Quest already completed" });
     }
 
+    const party = await QuestParty.findOne({ questID, memberIds: userId });
+    const inviterIds = party ? [] : await getQuestInviterIds(userId, questID);
+    if ((party && party.ownerId !== userId) || inviterIds.length > 0) {
+      return res.status(400).json({ message: "Only the quest inviter can invite more friends to this quest" });
+    }
+
     if (!(user.activeQuests || []).includes(questID)) {
       return res.status(400).json({ message: "Accept the quest before inviting friends" });
     }
@@ -649,11 +717,20 @@ app.post('/invite-friend-to-quest', async (req, res) => {
       return res.status(400).json({ message: "Only friends can be invited to quests" });
     }
 
+    if ((friend.doneQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "This friend has already completed this quest" });
+    }
+
+    if ((friend.activeQuests || []).includes(questID)) {
+      return res.status(400).json({ message: "This friend has already accepted this quest" });
+    }
+
     const invitedUserIds = getQuestInviteIds(user, questID);
     if (!invitedUserIds.includes(friendId)) {
       invitedUserIds.push(friendId);
       setQuestInviteIds(user, questID, invitedUserIds);
-      await user.save();
+      const party = await getOrCreateQuestParty(userId, questID);
+      await Promise.all([user.save(), party.save()]);
     }
 
     res.json({
@@ -707,7 +784,12 @@ app.post('/accept-quest-invite', async (req, res) => {
     }
 
     user.activeQuests = [...new Set([...(user.activeQuests || []), questID])];
-    await user.save();
+    setQuestInviteIds(inviter, questID, invitedUserIds.filter((invitedUserId) => invitedUserId !== userId));
+
+    const party = await getOrCreateQuestParty(inviterId, questID);
+    party.memberIds = [...new Set([...(party.memberIds || []), inviterId, userId])];
+
+    await Promise.all([user.save(), inviter.save(), party.save()]);
 
     res.json({ message: "Quest invite accepted", quest });
   } catch (err) {
@@ -746,31 +828,45 @@ app.post('/submit-quest', async (req, res) => {
       return res.status(400).json({ message: "Upload at least one photo before submitting" });
     }
 
-    const invitedUserIds = getQuestInviteIds(user, questID).filter((invitedUserId) => {
-      return (user.friends || []).includes(invitedUserId);
-    });
     const baseXP = quest.baseXP || 0;
-    const bonusXP = invitedUserIds.length * QUEST_INVITE_BONUS_XP;
-    const awardedXP = baseXP + bonusXP;
+    const partyIds = await getQuestPartyMemberIds(userId, questID);
+    const partyUsers = await User.find({ userId: { $in: partyIds } });
+    const activePartyUsers = partyUsers.filter((partyUser) => {
+      return (partyUser.activeQuests || []).includes(questID) && !(partyUser.doneQuests || []).includes(questID);
+    });
 
-    user.xp = (user.xp || 0) + awardedXP;
-    user.activeQuests = user.activeQuests.filter((activeQuestID) => activeQuestID !== questID);
-    user.questCooldowns = (user.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
-    user.questInvites = (user.questInvites || []).filter((invite) => invite.questID !== questID);
-    user.doneQuests = user.doneQuests || [];
-    if (!user.doneQuests.includes(questID)) {
-      user.doneQuests.push(questID);
+    const partyBonusXP = Math.max(activePartyUsers.length - 1, 0) * QUEST_INVITE_BONUS_XP;
+    const sharedAwardedXP = baseXP + partyBonusXP;
+    activePartyUsers.forEach((partyUser) => {
+      partyUser.xp = (partyUser.xp || 0) + sharedAwardedXP;
+      partyUser.activeQuests = (partyUser.activeQuests || []).filter((activeQuestID) => activeQuestID !== questID);
+      partyUser.questCooldowns = (partyUser.questCooldowns || []).filter((questCooldown) => questCooldown.questID !== questID);
+      partyUser.questInvites = (partyUser.questInvites || []).filter((invite) => invite.questID !== questID);
+      partyUser.doneQuests = partyUser.doneQuests || [];
+      if (!partyUser.doneQuests.includes(questID)) {
+        partyUser.doneQuests.push(questID);
+      }
+    });
+
+    let party = await QuestParty.findOne({ questID, memberIds: userId });
+    if (!party) {
+      party = new QuestParty({ ownerId: userId, questID, memberIds: [userId] });
     }
+    party.memberIds = [...new Set([...(party.memberIds || []), ...activePartyUsers.map((partyUser) => partyUser.userId)])];
+    party.completedAt = new Date();
 
-    await user.save();
+    await Promise.all([...activePartyUsers.map((partyUser) => partyUser.save()), party.save()]);
+
+    const updatedUser = activePartyUsers.find((partyUser) => partyUser.userId === userId) || user;
 
     res.json({
       message: "Quest submitted successfully",
-      awardedXP,
+      awardedXP: sharedAwardedXP,
       baseXP,
-      bonusXP,
-      invitedFriendCount: invitedUserIds.length,
-      xp: user.xp
+      bonusXP: partyBonusXP,
+      submittedMemberCount: activePartyUsers.length,
+      invitedFriendCount: Math.max(activePartyUsers.length - 1, 0),
+      xp: updatedUser.xp
     });
   } catch (err) {
     console.error(err);

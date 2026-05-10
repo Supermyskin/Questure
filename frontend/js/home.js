@@ -203,6 +203,7 @@ async function acceptQuestInvite(button) {
             body: JSON.stringify({ userId: userID, questID, inviterId })
         });
 
+        button.closest('.feed-item')?.remove();
         await fetchAndDisplayActiveQuests();
         await fetchQuestInvites();
     } catch (err) {
