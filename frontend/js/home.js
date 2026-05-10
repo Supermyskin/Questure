@@ -161,10 +161,11 @@ function renderQuestInvites(invites = []) {
                         <strong>${escapeHTML(inviter.name || 'Friend')}</strong> invited you to
                         <span class="quest-name">"${escapeHTML(quest.title || 'Quest')}"</span>
                     </p>
-                    <div class="feed-meta">+${quest.baseXP || 0} XP base reward</div>
+                    <div class="feed-text">+${quest.baseXP || 0} XP base reward</div>
                 </div>
                 <button class="btn-sm-primary accept-quest-invite-btn"
                     data-quest-id="${escapeHTML(invite.questID)}"
+                    data-session-id="${escapeHTML(invite.sessionId || '')}"
                     data-inviter-id="${escapeHTML(inviter.userId)}">Join</button>
             </div>
         `;
@@ -191,6 +192,7 @@ async function fetchQuestInvites() {
 async function acceptQuestInvite(button) {
     const questID = button.getAttribute('data-quest-id');
     const inviterId = button.getAttribute('data-inviter-id');
+    const sessionId = button.getAttribute('data-session-id');
     if (!questID || !inviterId) return;
 
     button.disabled = true;
@@ -200,7 +202,7 @@ async function acceptQuestInvite(button) {
         await fetchJSON(`${API_URL}/accept-quest-invite`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userID, questID, inviterId })
+            body: JSON.stringify({ userId: userID, questID, inviterId, sessionId })
         });
 
         button.closest('.feed-item')?.remove();

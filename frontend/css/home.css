@@ -486,3 +486,22 @@
     border-color: var(--glow);
     color: var(--text);
 }
+
+.topbar-greeting h1 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.1;
+}
+
+.topbar-greeting h1 span {
+    color: var(--glow);
+}
+
+.topbar-greeting p {
+    font-size: 0.75rem;
+    color: var(--dim);
+    font-weight: 700;
+    margin-top: 0.125rem;
+    font-family: var(--pixel);
+}

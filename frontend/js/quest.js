@@ -9,9 +9,11 @@ const questState = {
     ownPhotoCount: 0,
     submitted: false,
     completed: false,
+    baseXP: 0,
     bonusXP: 0,
-    bonusPerFriend: 0,
+    bonusPercentPerParticipant: 5,
     canInvite: true,
+    questSession: null,
     invitedFriends: [],
     availableFriends: []
 };
@@ -146,6 +148,7 @@ function renderQuest(quest) {
     document.getElementById('banner-emoji').textContent = quest.banner || '⚡';
     document.getElementById('quest-desc').textContent = quest.description || 'No quest description available.';
     document.getElementById('xp-amount').textContent = `+${quest.baseXP || 0} XP`;
+    questState.baseXP = quest.baseXP || 0;
     renderQuestBadges(quest.badges);
     renderQuestTags(quest.tags);
 }
@@ -173,7 +176,8 @@ function updateSubmitButton() {
     const debugResetButton = document.getElementById('btn-debug-reset-quest');
     if (!submitButton || !submitStatus) return;
 
-    const canSubmit = questState.accepted && questState.ownPhotoCount > 0 && !questState.completed && !questState.submitted;
+    const isLeader = questState.questSession?.isLeader !== false;
+    const canSubmit = questState.accepted && isLeader && questState.ownPhotoCount > 0 && !questState.completed && !questState.submitted;
 
     submitButton.disabled = !canSubmit;
     submitButton.classList.toggle('btn-ghost-dashed', !canSubmit);
@@ -187,6 +191,9 @@ function updateSubmitButton() {
     } else if (!questState.accepted) {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Accept quest first';
+    } else if (!isLeader) {
+        submitButton.textContent = 'Submit Quest';
+        submitStatus.textContent = 'Leader submits';
     } else if (questState.ownPhotoCount < 1) {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Upload proof first';
@@ -197,6 +204,11 @@ function updateSubmitButton() {
         submitButton.textContent = 'Submit Quest';
         submitStatus.textContent = 'Ready';
     }
+}
+
+function getSessionBonusXP() {
+    const participantCount = questState.questSession?.participantCount || 1;
+    return Math.round((questState.baseXP || 0) * 0.05 * participantCount);
 }
 
 function setInviteText(id, text) {
@@ -212,39 +224,96 @@ function renderInvitePanel() {
     if (questState.completed) {
         setInviteText('invite-status', 'Completed');
         setInviteText('invite-copy', 'This quest is complete.');
-        inviteBonus.textContent = `+${questState.bonusXP || 0} XP squad bonus`;
+        inviteBonus.textContent = `+${getSessionBonusXP()} XP session bonus`;
         inviteList.innerHTML = '<div class="list-empty">Quest invites are closed.</div>';
         return;
     }
 
     if (!questState.accepted) {
         setInviteText('invite-status', 'Locked');
-        setInviteText('invite-copy', 'Accept the quest first, then invite friends to join your session and unlock the squad XP bonus.');
-        inviteBonus.textContent = '+0 XP squad bonus';
+        setInviteText('invite-copy', 'Accept the quest first, then invite friends to join your session and unlock the session XP bonus.');
+        inviteBonus.textContent = '+0 XP session bonus';
         inviteList.innerHTML = '<div class="list-empty">Invite friends after accepting this quest.</div>';
         return;
     }
 
     const friends = Array.isArray(questState.availableFriends) ? questState.availableFriends : [];
-    const invitedCount = friends.filter((friend) => friend.invited).length;
-    const bonusPerFriend = questState.bonusPerFriend || 0;
+    const session = questState.questSession || {};
+    const participants = Array.isArray(session.participants) ? session.participants : [];
+    const participantCount = session.participantCount || participants.length || 1;
+    const maxParticipants = session.maxParticipants || 6;
+    const pendingInviteCount = Array.isArray(session.pendingInviteIds) ? session.pendingInviteIds.length : 0;
 
-    setInviteText('invite-status', invitedCount === 1 ? '1 invited' : `${invitedCount} invited`);
+    setInviteText('invite-status', `${participantCount}/${maxParticipants} joined`);
     setInviteText(
         'invite-copy',
         questState.canInvite
-            ? `Each invited friend adds +${bonusPerFriend} XP when you finish this quest.`
-            : 'You joined this quest through an invite, so only the original inviter can add more party members.'
+            ? `Any participant can invite friends. The leader can kick participants and submit the quest.`
+            : participantCount >= maxParticipants
+                ? 'This quest session is full.'
+                : 'Quest invites are unavailable right now.'
     );
-    inviteBonus.textContent = `+${questState.bonusXP || 0} XP squad bonus`;
+    inviteBonus.textContent = `+${getSessionBonusXP()} XP session bonus (${participantCount} participant${participantCount === 1 ? '' : 's'})`;
+
+    inviteList.replaceChildren();
+
+    participants.forEach((participant) => {
+        const item = document.createElement('div');
+        item.className = 'invite-friend';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'invite-avatar';
+        avatar.textContent = participant.emoji || '?';
+
+        const info = document.createElement('div');
+        info.className = 'invite-info';
+
+        const name = document.createElement('div');
+        name.className = 'invite-name';
+        name.textContent = participant.userId === userID ? `${participant.name || 'You'} (You)` : participant.name || 'Participant';
+
+        const stats = document.createElement('div');
+        stats.className = 'invite-stats';
+        const leaderText = participant.userId === session.leaderId ? 'Leader' : 'Participant';
+        stats.textContent = `${leaderText} · LV.${xpToLevel(participant.xp || 0)} · ${participant.xp || 0} XP`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn-invite invited';
+        button.dataset.userId = participant.userId;
+
+        if (session.isLeader && participant.userId !== userID) {
+            button.disabled = false;
+            button.className = 'btn-invite btn-kick';
+            button.innerHTML = '<i class="fa-solid fa-user-minus"></i> Kick';
+        } else {
+            button.disabled = true;
+            button.innerHTML = participant.userId === session.leaderId
+                ? '<i class="fa-solid fa-crown"></i> Leader'
+                : '<i class="fa-solid fa-check"></i> Joined';
+        }
+
+        info.append(name, stats);
+        item.append(avatar, info, button);
+        inviteList.appendChild(item);
+    });
+
+    if (pendingInviteCount > 0) {
+        const pending = document.createElement('div');
+        pending.className = 'list-empty';
+        pending.textContent = `${pendingInviteCount} pending invite${pendingInviteCount === 1 ? '' : 's'}.`;
+        inviteList.appendChild(pending);
+    }
 
     if (friends.length === 0) {
-        inviteList.innerHTML = '<div class="list-empty">Add friends first, then invite them to this quest.</div>';
+        if (participants.length === 0) {
+            inviteList.innerHTML = '<div class="list-empty">Add friends first, then invite them to this quest.</div>';
+        }
         return;
     }
 
-    inviteList.replaceChildren();
     friends.forEach((friend) => {
+        if (friend.inSession) return;
         const item = document.createElement('div');
         item.className = 'invite-friend';
 
@@ -267,6 +336,9 @@ function renderInvitePanel() {
         let isDisabled = !questState.canInvite;
         if (friend.invited) {
             inviteLabel = '<i class="fa-solid fa-check"></i> Invited';
+            isDisabled = true;
+        } else if (friend.sessionFull) {
+            inviteLabel = '<i class="fa-solid fa-users"></i> Full';
             isDisabled = true;
         } else if (friend.questCompleted) {
             inviteLabel = '<i class="fa-solid fa-check"></i> Completed';
@@ -304,10 +376,12 @@ async function fetchQuestInvites(questID) {
         const data = await response.json();
         questState.canInvite = data.canInvite !== false;
         questState.bonusXP = data.bonusXP || 0;
-        questState.bonusPerFriend = data.bonusPerFriend || 0;
+        questState.bonusPercentPerParticipant = data.bonusPercentPerParticipant || 5;
+        questState.questSession = data.questSession || null;
         questState.invitedFriends = Array.isArray(data.invitedFriends) ? data.invitedFriends : [];
         questState.availableFriends = Array.isArray(data.availableFriends) ? data.availableFriends : [];
         renderInvitePanel();
+        updateSubmitButton();
     } catch (err) {
         console.error("Error fetching quest invites:", err);
         setInviteText('invite-status', 'Failed');
@@ -442,6 +516,7 @@ async function fetchQuestData() {
         questState.submitted = false;
         questState.bonusXP = 0;
         questState.canInvite = true;
+        questState.questSession = null;
         questState.availableFriends = [];
         questState.invitedFriends = [];
 
@@ -480,6 +555,10 @@ async function fetchQuestData() {
         document.getElementById('invite-list')?.addEventListener('click', (event) => {
             const button = event.target.closest('.btn-invite');
             if (!button || button.disabled) return;
+            if (button.classList.contains('btn-kick')) {
+                kickQuestParticipant(questID, button.dataset.userId, button);
+                return;
+            }
             inviteFriendToQuest(questID, button.dataset.userId, button);
         });
         updateSubmitButton();
@@ -513,6 +592,38 @@ async function inviteFriendToQuest(questID, friendId, button) {
         await fetchQuestInvites(questID);
     } catch (err) {
         console.error("Error inviting friend:", err);
+        alert(err.message);
+        await fetchQuestInvites(questID);
+    }
+}
+
+async function kickQuestParticipant(questID, participantId, button) {
+    if (!questState.questSession?.isLeader || !participantId) return;
+
+    if (!confirm('Kick this participant from the quest session?')) {
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Kicking';
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/kick-quest-participant`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userID, questID, participantId })
+        });
+
+        if (!response.ok) {
+            throw new Error(await getErrorMessage(response, 'Failed to kick participant.'));
+        }
+
+        await fetchQuestInvites(questID);
+        await fetchQuestPhotos(questID);
+    } catch (err) {
+        console.error("Error kicking participant:", err);
         alert(err.message);
         await fetchQuestInvites(questID);
     }
@@ -629,7 +740,7 @@ async function abandonQuest(questID) {
 }
 
 async function submitQuest(questID) {
-    if (!questState.accepted || questState.ownPhotoCount < 1 || questState.completed) {
+    if (!questState.accepted || questState.ownPhotoCount < 1 || questState.completed || questState.questSession?.isLeader === false) {
         updateSubmitButton();
         return;
     }
@@ -650,8 +761,8 @@ async function submitQuest(questID) {
         questState.submitted = true;
         questState.completed = true;
 
-        const bonusText = data.bonusXP ? ` (${data.baseXP || 0} base + ${data.bonusXP} bonus)` : '';
-        alert(`Quest completed! +${data.awardedXP || 0} XP${bonusText}`);
+        const bonusText = data.bonusXP ? ` (${data.baseXP || 0} base + ${data.bonusXP} session bonus)` : '';
+        alert(`Quest completed for ${data.participantCount || 1} participant(s)! +${data.awardedXP || 0} XP each${bonusText}`);
         await fetchUserData();
         updateSubmitButton();
         location.reload();
