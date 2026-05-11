@@ -259,13 +259,15 @@ function createQuestCard(quest, photoCount) {
     return card;
 }
 async function fetchAndDisplayActiveQuests() {
+    const questsListContainer = document.getElementById('quests-list');
+    if (!questsListContainer) return;
+
     const user = await fetchUserData();
     if (!user || !user.activeQuests || user.activeQuests.length === 0) {
-        document.getElementById('quests-list').innerHTML = '<span class="logo-sub">No active quests. Accept quests to see them here.</span>';
+        questsListContainer.innerHTML = '<span class="logo-sub">No active quests. Accept quests to see them here.</span>';
         return;
     }
     const recentActiveQuests = user.activeQuests.slice(-3).reverse();
-    const questsListContainer = document.getElementById('quests-list');
     questsListContainer.innerHTML = '';
 
     const questDataPromises = recentActiveQuests.map(async questID => {

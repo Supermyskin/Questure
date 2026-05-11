@@ -10,7 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../css/shared.css">
-    <link rel="stylesheet" href="../css/friends.css">
+    <link rel="stylesheet" href="../css/discover.css">
     <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
     <script src="../js/auth-guard.js"></script>
     <link rel="icon" href="../favicon.png">
@@ -32,7 +32,7 @@
                 <a href="./home.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
                 </a>
-                <a href="./discover.html" class="nav-item">
+                <a href="./discover.html" class="nav-item active">
                     <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
                 </a>
                 <a href="#" class="nav-item">
@@ -43,7 +43,7 @@
                 </a>
 
                 <span class="nav-section-label">// SOCIAL</span>
-                <a href="#" class="nav-item active">
+                <a href="./friends.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span> Friends
                 </a>
                 <a href="#" class="nav-item">
@@ -75,10 +75,10 @@
         </aside>
         <div class="main">
             <header class="topbar">
-                <div class="breadcrumb">
-                    <a href="./friends.html" style="font-size:1rem" class="current">Friends</a>
-                    <span>/</span>
-                    <span>Manage your friends</span>
+                <div class="topbar-greeting">
+                    <h1>Explore <span id="profile-name-topbar">Quests</span></i></h1>
+                    <p>// <span id="active-quests-count">0</span> active quests · <span id="current-location">Sofia,
+                            BG</span></p>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -86,57 +86,45 @@
                         <span class="notif-dot" hidden></span>
                     </div>
                     <div class="xp-pill-top">
-                        <span class="pill-level" id="pill-level">LV.0</span>
+                        <span class="pill-level" id="pill-level">LV.1</span>
                         <div class="pill-divider"></div>
                         <span class="pill-xp" id="pill-xp">0 XP</span>
                     </div>
                 </div>
             </header>
             <div class="content">
-                <div class="section">
-                    <div class="section-header">
-                        <span class="section-title-pixel">// ADD FRIENDS</span>
-                        <span id="search-status" style="font-size:11px;font-weight:700;color:var(--dim)">Search by name
-                            or email</span>
-                    </div>
-                    <div class="section-body">
-                        <input type="text" id="user-search" class="search-box" placeholder="🔍 Find users...">
-                        <div id="user-search-results" class="list-empty">Type at least 2 characters to search.</div>
-                    </div>
-                </div>
-                <div class="section">
-                    <div class="section-header">
-                        <span class="section-title-pixel">// Friend Requests</span>
-                        <span id="requests-count" style="font-size:11px;font-weight:700;color:var(--dim)">Empty</span>
-                    </div>
-                    <div class="section-body" id="requests-list">
-                        <div class="list-empty">
-                            No pending friend requests.
+                <div class="discover-header">
+                    <span class="section-title-pixel">// DISCOVER</span>
+                    <div class="discover-controls">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" placeholder="Search quests...">
+                        </div>
+                        <div class="filter-pills">
+                            <span class="filter-pill active">All</span>
+                            <span class="filter-pill">Social</span>
+                            <span class="filter-pill">Culture</span>
+                            <span class="filter-pill">Nature</span>
+                            <span class="filter-pill">Challenge</span>
                         </div>
                     </div>
                 </div>
-                <div class="section">
-                    <div class="section-header">
-                        <span class="section-title-pixel">// YOUR FRIENDS</span>
-                        <span id="friends-count" style="font-size:11px;font-weight:700;color:var(--dim)">0
-                            friends</span>
-                    </div>
-                    <div class="section-body">
-                        <input type="text" id="friend-filter" class="search-box" placeholder="🔍 Search friends...">
-                        <div id="friends-list">
-                            <div class="list-empty">
-                                You have not added any friends yet.
-                            </div>
+
+                <div class="discover-grid">
+                    <div class="discover-card">
+                        <span class="dc-emoji">❔</span>
+                        <div class="dc-title">Unknown Quest</div>
+                        <p class="dc-desc">Huh no information here?</p>
+                        <div class="dc-meta">
+                            <span class="dc-xp">+0 XP</span>
+                            <span class="dc-diff easy">Hard</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
-
-    <script src="../js/friends.js"></script>
-
+    <script src="../js/home.js"></script>
 </body>
 
 </html>
