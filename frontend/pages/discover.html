@@ -77,8 +77,8 @@
             <header class="topbar">
                 <div class="topbar-greeting">
                     <h1>Explore <span id="profile-name-topbar">Quests</span></i></h1>
-                    <p>// <span id="active-quests-count">0</span> active quests · <span id="current-location">Sofia,
-                            BG</span></p>
+                    <p>// <span id="active-quests-count">0</span> active quests · <span id="discover-quests-count">0</span>
+                        discoverable quests</p>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -98,33 +98,27 @@
                     <div class="discover-controls">
                         <div class="search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" placeholder="Search quests...">
+                            <input id="quest-search" type="text" placeholder="Search quests...">
                         </div>
                         <div class="filter-pills">
-                            <span class="filter-pill active">All</span>
-                            <span class="filter-pill">Social</span>
-                            <span class="filter-pill">Culture</span>
-                            <span class="filter-pill">Nature</span>
-                            <span class="filter-pill">Challenge</span>
+                            <button class="filter-pill active" type="button" data-filter="all">All</button>
+                            <button class="filter-pill" type="button" data-filter="easy">Easy</button>
+                            <button class="filter-pill" type="button" data-filter="hard">Hard</button>
+                            <button class="filter-pill" type="button" data-filter="medium">Medium</button>
+                            <button class="filter-pill" type="button" data-filter="social">Social</button>
+                            <button class="filter-pill" type="button" data-filter="solo">Solo</button>
+                            <button class="filter-pill" type="button" data-filter="group">Group</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="discover-grid">
-                    <div class="discover-card">
-                        <span class="dc-emoji">❔</span>
-                        <div class="dc-title">Unknown Quest</div>
-                        <p class="dc-desc">Huh no information here?</p>
-                        <div class="dc-meta">
-                            <span class="dc-xp">+0 XP</span>
-                            <span class="dc-diff easy">Hard</span>
-                        </div>
-                    </div>
+                <div class="discover-grid" id="discover-grid">
+                    <div class="discover-empty">Loading quests...</div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="../js/home.js"></script>
+    <script src="../js/discover.js"></script>
 </body>
 
 </html>

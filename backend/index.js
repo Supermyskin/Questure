@@ -521,6 +521,19 @@ app.get('/fetch-quest-info', async (req, res) => {
   }
 });
 
+app.get('/fetch-quests', async (req, res) => {
+  try {
+    const quests = await Quest.find({})
+      .sort({ questID: 1 })
+      .select('questID title banner description tags badges baseXP');
+
+    res.json({ quests });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.post('/create-quest', async (req, res) => {
   try {
     const newQuest = new Quest(req.body);
