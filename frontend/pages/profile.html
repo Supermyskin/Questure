@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questure - Home</title>
+    <title>Questure - Account</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
@@ -32,7 +32,7 @@
                 <a href="./home.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
                 </a>
-                <a href="./discover.html" class="nav-item active">
+                <a href="./discover.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
                 </a>
                 <a href="#" class="nav-item">
@@ -54,10 +54,10 @@
                 </a>
 
                 <span class="nav-section-label">// YOU</span>
-                <a href="#" class="nav-item">
+                <a href="./profile.html" class="nav-item active">
                     <span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile
                 </a>
-                <a href="#" class="nav-item">
+                <a href="./profile.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings
                 </a>
             </nav>
@@ -76,7 +76,8 @@
         <div class="main">
             <header class="topbar">
                 <div class="topbar-greeting">
-                    <h1 id="topbar-username">User</h1>
+                    <h1>Account <span id="topbar-username">User</span></h1>
+                    <p>// manage profile and sign-in details</p>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -93,19 +94,80 @@
             <div class="content">
                 <div class="profile-header">
                     <div class="profile-top">
-                        <div class="profile-avatar-big">❔</div>
+                        <div class="profile-avatar-big" id="account-emoji">❔</div>
                         <div class="profile-info">
-                            <h1 class="profile-username">user</h1>
-                            <div class="profile-title">LV.0 · TITLE</div>
-                            <p class="profile-bio">Cool bio.</p>
+                            <h1 class="profile-username" id="account-name">User</h1>
+                            <div class="profile-title" id="account-title">LV.1 · BEGINNER</div>
+                            <p class="profile-bio" id="account-email">Loading account...</p>
                         </div>
                         <div class="profile-actions">
-                            <button class="btn-primary">Edit profile</button>
+                            <button class="btn-primary" id="save-account-btn" form="account-form">Save changes</button>
+                            <button class="btn-secondary" id="logout-btn" type="button">Log out</button>
                         </div>
                     </div>
                 </div>
+
+                <div class="account-grid">
+                    <section class="section">
+                        <div class="section-header">
+                            <span class="section-title-pixel">// PROFILE</span>
+                            <span class="account-status" id="account-status">Ready</span>
+                        </div>
+                        <form class="section-body account-form" id="account-form">
+                            <label class="field-label" for="name-input">Display name</label>
+                            <input class="field-input" id="name-input" name="name" autocomplete="name" required minlength="2">
+
+                            <label class="field-label" for="email-input">Email</label>
+                            <input class="field-input" id="email-input" name="email" type="email" autocomplete="email" required>
+
+                            <label class="field-label" for="emoji-input">Avatar emoji</label>
+                            <input class="field-input emoji-input" id="emoji-input" name="emoji" maxlength="12" required>
+                        </form>
+                    </section>
+
+                    <section class="section">
+                        <div class="section-header">
+                            <span class="section-title-pixel">// PROGRESS</span>
+                        </div>
+                        <div class="section-body stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-level">1</span>
+                                <span class="stat-label">Level</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-xp">0</span>
+                                <span class="stat-label">XP</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-active">0</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-done">0</span>
+                                <span class="stat-label">Done</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// PASSWORD</span>
+                        <span class="account-status" id="password-status">Optional</span>
+                    </div>
+                    <form class="section-body account-form password-form" id="password-form">
+                        <label class="field-label" for="current-password-input">Current password</label>
+                        <input class="field-input" id="current-password-input" name="currentPassword" type="password" autocomplete="current-password">
+
+                        <label class="field-label" for="new-password-input">New password</label>
+                        <input class="field-input" id="new-password-input" name="newPassword" type="password" autocomplete="new-password" minlength="6">
+
+                        <button class="btn-primary password-save" id="save-password-btn" type="submit">Update password</button>
+                    </form>
+                </section>
             </div>
         </div>
+    </div>
         <script src="../js/profile.js"></script>
 </body>
 

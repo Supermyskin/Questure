@@ -312,6 +312,84 @@ app.get('/fetch-user-info', async (req, res) => {
   }
 });
 
+app.patch('/update-user-info', async (req, res) => {
+  try {
+    const { userId, name, email, emoji, currentPassword, newPassword } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const trimmedName = typeof name === 'string' ? name.trim() : undefined;
+    const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
+    const trimmedEmoji = typeof emoji === 'string' ? emoji.trim() : undefined;
+
+    if (trimmedName !== undefined) {
+      if (trimmedName.length < 2) {
+        return res.status(400).json({ message: "Name must be at least 2 characters" });
+      }
+      user.name = trimmedName;
+    }
+
+    if (trimmedEmail !== undefined) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        return res.status(400).json({ message: "Enter a valid email address" });
+      }
+
+      const existingUser = await User.findOne({ email: trimmedEmail, userId: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email is already in use" });
+      }
+      user.email = trimmedEmail;
+    }
+
+    if (trimmedEmoji !== undefined) {
+      if (trimmedEmoji.length === 0 || trimmedEmoji.length > 12) {
+        return res.status(400).json({ message: "Choose a valid emoji" });
+      }
+      user.emoji = trimmedEmoji;
+    }
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password is required" });
+      }
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters" });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    await user.save();
+
+    res.json({
+      message: "Account updated",
+      user: {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        emoji: user.emoji || '❔',
+        xp: user.xp || 0,
+        activeQuests: user.activeQuests || [],
+        doneQuests: user.doneQuests || []
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.get('/friends', async (req, res) => {
   try {
     const userId = req.query.userID || req.query.userId;
