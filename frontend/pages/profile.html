@@ -76,8 +76,8 @@
         <div class="main">
             <header class="topbar">
                 <div class="topbar-greeting">
-                    <h1>Account <span id="topbar-username">User</span></h1>
-                    <p>// manage profile and sign-in details</p>
+                    <h1 id="profile-page-title">Account <span id="topbar-username">User</span></h1>
+                    <p id="profile-page-subtitle">// manage profile and sign-in details</p>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -98,17 +98,18 @@
                         <div class="profile-info">
                             <h1 class="profile-username" id="account-name">User</h1>
                             <div class="profile-title" id="account-title">LV.1 · BEGINNER</div>
-                            <p class="profile-bio" id="account-email">Loading account...</p>
+                            <p class="profile-bio" id="account-bio">Loading profile...</p>
+                            <p class="profile-email" id="account-email"></p>
                         </div>
-                        <div class="profile-actions">
+                        <div class="profile-actions" id="own-profile-actions">
                             <button class="btn-primary" id="save-account-btn" form="account-form">Save changes</button>
                             <button class="btn-secondary" id="logout-btn" type="button">Log out</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="account-grid">
-                    <section class="section">
+                <div class="account-grid" id="profile-details-grid">
+                    <section class="section" id="profile-edit-section">
                         <div class="section-header">
                             <span class="section-title-pixel">// PROFILE</span>
                             <span class="account-status" id="account-status">Ready</span>
@@ -120,8 +121,13 @@
                             <label class="field-label" for="email-input">Email</label>
                             <input class="field-input" id="email-input" name="email" type="email" autocomplete="email" required>
 
+                            <label class="field-label" for="bio-input">Bio</label>
+                            <textarea class="field-input field-textarea" id="bio-input" name="bio" maxlength="180" rows="4" placeholder="Say something about your quests."></textarea>
+                            <div class="field-help"><span id="bio-count">0</span>/180</div>
+
                             <label class="field-label" for="emoji-input">Avatar emoji</label>
-                            <input class="field-input emoji-input" id="emoji-input" name="emoji" maxlength="12" required>
+                            <input type="hidden" id="emoji-input" name="emoji" required>
+                            <div class="avatar-picker" id="avatar-picker" role="listbox" aria-label="Choose profile avatar"></div>
                         </form>
                     </section>
 
@@ -150,7 +156,7 @@
                     </section>
                 </div>
 
-                <section class="section">
+                <section class="section" id="password-section">
                     <div class="section-header">
                         <span class="section-title-pixel">// PASSWORD</span>
                         <span class="account-status" id="password-status">Optional</span>

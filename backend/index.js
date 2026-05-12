@@ -25,19 +25,7 @@ const MAX_QUEST_SESSION_PARTICIPANTS = 6;
 const emojis = [
   '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
   '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
-  '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸',
-  '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️',
-  '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡',
-  '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓',
-  '🤗', '🤔', '🫣', '🤭', '🫢', '🫡', '🤫', '🫠', '🤥', '😶',
-  '🫥', '😐', '🫤', '😑', '😬', '🙄', '😯', '😦', '😧', '😮',
-  '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮',
-  '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺',
-  '🤡', '💀', '☠️', '👻', '👽', '🤖', '🎃', '😺', '😸', '😹',
-  '😻', '😼', '😽', '🙀', '😿', '😾', '🐵', '🙈', '🙉', '🙊',
-  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
-  '🦁', '🐮', '🐷', '🐸', '🐲', '🦄', '🐙', '🦋', '🐝', '🦖',
-  '🔥', '⚡', '🌈', '💎', '🌟', '🚀', '🎮', '🎨', '🧩', '💡'
+  '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸'
 ];
 
 const userSchema = new mongoose.Schema({
@@ -46,6 +34,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   emoji: { type: String, required: true },
+  bio: { type: String, default: '' },
   xp: { type: Number, default: 0 },
   friends: { type: [String], default: [] },
   incomingFriendRequests: { type: [String], default: [] },
@@ -300,6 +289,7 @@ app.get('/fetch-user-info', async (req, res) => {
       name: user.name,
       email: user.email,
       emoji: user.emoji || '🕵️‍♂️',
+      bio: user.bio || '',
       xp: user.xp || 0,
       activeQuests: user.activeQuests || [],
       doneQuests: user.doneQuests || [],
@@ -312,9 +302,45 @@ app.get('/fetch-user-info', async (req, res) => {
   }
 });
 
+app.get('/fetch-profile-info', async (req, res) => {
+  try {
+    const profileUserId = req.query.userID || req.query.userId || req.query.id;
+    const viewerUserId = req.query.viewerID || req.query.viewerId;
+    if (!profileUserId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    const user = await User.findOne({ userId: profileUserId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isOwnProfile = viewerUserId === profileUserId;
+    const profile = {
+      userId: user.userId,
+      name: user.name,
+      emoji: user.emoji || '❔',
+      bio: user.bio || '',
+      xp: user.xp || 0,
+      activeQuests: user.activeQuests || [],
+      doneQuests: user.doneQuests || [],
+      isOwnProfile
+    };
+
+    if (isOwnProfile) {
+      profile.email = user.email;
+    }
+
+    res.json(profile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.patch('/update-user-info', async (req, res) => {
   try {
-    const { userId, name, email, emoji, currentPassword, newPassword } = req.body;
+    const { userId, name, email, emoji, bio, currentPassword, newPassword } = req.body;
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
@@ -327,6 +353,7 @@ app.patch('/update-user-info', async (req, res) => {
     const trimmedName = typeof name === 'string' ? name.trim() : undefined;
     const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
     const trimmedEmoji = typeof emoji === 'string' ? emoji.trim() : undefined;
+    const trimmedBio = typeof bio === 'string' ? bio.trim() : undefined;
 
     if (trimmedName !== undefined) {
       if (trimmedName.length < 2) {
@@ -354,6 +381,13 @@ app.patch('/update-user-info', async (req, res) => {
       user.emoji = trimmedEmoji;
     }
 
+    if (trimmedBio !== undefined) {
+      if (trimmedBio.length > 180) {
+        return res.status(400).json({ message: "Bio must be 180 characters or less" });
+      }
+      user.bio = trimmedBio;
+    }
+
     if (newPassword) {
       if (!currentPassword) {
         return res.status(400).json({ message: "Current password is required" });
@@ -379,6 +413,7 @@ app.patch('/update-user-info', async (req, res) => {
         name: user.name,
         email: user.email,
         emoji: user.emoji || '❔',
+        bio: user.bio || '',
         xp: user.xp || 0,
         activeQuests: user.activeQuests || [],
         doneQuests: user.doneQuests || []

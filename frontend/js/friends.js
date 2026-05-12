@@ -319,10 +319,7 @@ function bindEvents() {
             } else if (action === 'remove-friend') {
                 await removeFriend(targetUserId);
             } else if (action === 'view-profile') {
-                const friend = friendsState.friends.find((item) => item.userId === targetUserId);
-                if (friend) {
-                    alert(`${friend.name}\nLV.${xpToLevel(friend.xp || 0)} · ${friend.xp || 0} XP`);
-                }
+                window.location.href = `./profile.html?userID=${encodeURIComponent(targetUserId)}`;
             }
         } catch (err) {
             alert(err.message || 'Action failed.');

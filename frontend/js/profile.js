@@ -1,6 +1,10 @@
-const userID = localStorage.getItem('userID');
+const loggedInUserID = localStorage.getItem('userID');
 const API_URL = 'http://127.0.0.1:3000';
-
+const avatarChoices = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+    '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+    '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸',
+];
 const thresholds = [
     { level: 1, xp: 0 },
     { level: 2, xp: 500 },
@@ -13,6 +17,14 @@ const thresholds = [
     { level: 9, xp: 19000 },
     { level: 10, xp: 25000 },
 ];
+
+function getProfileUserIDFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('userID') || params.get('userId') || params.get('id') || loggedInUserID;
+}
+
+const profileUserID = getProfileUserIDFromURL();
+const isOwnProfile = profileUserID === loggedInUserID;
 
 function xpTitleLookup(xp) {
     if (xp < 500) return "Beginner";
@@ -50,6 +62,26 @@ function setValue(id, value) {
     if (element) element.value = value;
 }
 
+function updateBioCount() {
+    const bioInput = document.getElementById('bio-input');
+    setText('bio-count', (bioInput?.value || '').length);
+}
+
+function setHidden(id, hidden) {
+    const element = document.getElementById(id);
+    if (element) element.hidden = hidden;
+}
+
+function escapeHTML(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
 async function getErrorMessage(response, fallback) {
     try {
         const data = await response.json();
@@ -67,24 +99,61 @@ async function fetchJSON(url, options = {}) {
     return response.json();
 }
 
-function renderAccount(user) {
+function renderShellUser(user) {
+    const xp = user.xp || 0;
+    const level = xpToLevel(xp);
+    const title = xpTitleLookup(xp);
+
+    setText('profile-emoji', user.emoji || '❔');
+    setText('profile-name', user.name || 'User');
+    setText('profile-rank', title);
+    setText('pill-level', `LV. ${level}`);
+    setText('pill-xp', `${xp} XP`);
+}
+
+function selectAvatar(emoji) {
+    setValue('emoji-input', emoji);
+    setText('account-emoji', emoji);
+
+    document.querySelectorAll('.avatar-option').forEach((button) => {
+        const selected = button.dataset.emoji === emoji;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+}
+
+function renderAvatarPicker(selectedEmoji) {
+    const picker = document.getElementById('avatar-picker');
+    if (!picker) return;
+
+    const choices = avatarChoices.includes(selectedEmoji)
+        ? avatarChoices
+        : [selectedEmoji, ...avatarChoices].filter(Boolean);
+
+    picker.innerHTML = choices.map((emoji) => `
+        <button class="avatar-option" type="button" data-emoji="${escapeHTML(emoji)}" role="option" aria-selected="false">${escapeHTML(emoji)}</button>
+    `).join('');
+
+    picker.querySelectorAll('.avatar-option').forEach((button) => {
+        button.addEventListener('click', () => selectAvatar(button.dataset.emoji));
+    });
+
+    selectAvatar(selectedEmoji || '😀');
+}
+
+function renderProfile(user) {
     const xp = user.xp || 0;
     const level = xpToLevel(xp);
     const title = xpTitleLookup(xp);
     const name = user.name || 'User';
     const emoji = user.emoji || '❔';
 
-    setText('profile-emoji', emoji);
-    setText('profile-name', name);
-    setText('profile-rank', title);
     setText('topbar-username', name);
-    setText('pill-level', `LV. ${level}`);
-    setText('pill-xp', `${xp} XP`);
-
     setText('account-emoji', emoji);
     setText('account-name', name);
     setText('account-title', `LV.${level} · ${title.toUpperCase()}`);
-    setText('account-email', user.email || '');
+    setText('account-bio', user.bio || 'No bio yet.');
+    setText('account-email', isOwnProfile ? (user.email || '') : `@${user.userId}`);
 
     setText('stat-level', level);
     setText('stat-xp', xp);
@@ -93,23 +162,58 @@ function renderAccount(user) {
 
     setValue('name-input', name);
     setValue('email-input', user.email || '');
-    setValue('emoji-input', emoji);
+    setValue('bio-input', user.bio || '');
+    updateBioCount();
+    renderAvatarPicker(emoji);
 }
 
-async function loadAccount() {
+function applyProfileMode() {
+    setHidden('own-profile-actions', !isOwnProfile);
+    setHidden('profile-edit-section', !isOwnProfile);
+    setHidden('password-section', !isOwnProfile);
+    setHidden('account-status', !isOwnProfile);
+
+    const title = document.getElementById('profile-page-title');
+    if (title) {
+        title.innerHTML = `${isOwnProfile ? 'Account' : 'Profile'} <span id="topbar-username">${escapeHTML(document.getElementById('account-name')?.textContent || 'User')}</span>`;
+    }
+
+    if (isOwnProfile) {
+        setText('profile-page-subtitle', '// manage profile and sign-in details');
+        return;
+    }
+
+    setText('profile-page-subtitle', '// public profile');
+    document.getElementById('account-form')?.querySelectorAll('input, button').forEach((element) => {
+        element.disabled = true;
+    });
+}
+
+async function loadProfile() {
     try {
         setText('account-status', 'Loading...');
-        const user = await fetchJSON(`${API_URL}/fetch-user-info?userID=${encodeURIComponent(userID)}`);
-        renderAccount(user);
+
+        const profile = await fetchJSON(`${API_URL}/fetch-profile-info?userID=${encodeURIComponent(profileUserID)}&viewerID=${encodeURIComponent(loggedInUserID)}`);
+        renderProfile(profile);
+        applyProfileMode();
         setText('account-status', 'Ready');
+
+        if (isOwnProfile) {
+            renderShellUser(profile);
+        } else {
+            const viewer = await fetchJSON(`${API_URL}/fetch-profile-info?userID=${encodeURIComponent(loggedInUserID)}&viewerID=${encodeURIComponent(loggedInUserID)}`);
+            renderShellUser(viewer);
+        }
     } catch (err) {
-        console.error("Error loading account:", err);
+        console.error("Error loading profile:", err);
         setText('account-status', err.message || 'Could not load');
+        setText('account-bio', err.message || 'Could not load profile.');
     }
 }
 
 async function saveAccount(event) {
     event.preventDefault();
+    if (!isOwnProfile) return;
 
     const button = document.getElementById('save-account-btn');
     button.disabled = true;
@@ -120,15 +224,17 @@ async function saveAccount(event) {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId: userID,
+                userId: loggedInUserID,
                 name: document.getElementById('name-input').value,
                 email: document.getElementById('email-input').value,
+                bio: document.getElementById('bio-input').value,
                 emoji: document.getElementById('emoji-input').value
             })
         });
 
         localStorage.setItem('userName', data.user.name);
-        renderAccount(data.user);
+        renderProfile(data.user);
+        renderShellUser(data.user);
         setText('account-status', 'Saved');
     } catch (err) {
         console.error("Error saving account:", err);
@@ -140,6 +246,7 @@ async function saveAccount(event) {
 
 async function savePassword(event) {
     event.preventDefault();
+    if (!isOwnProfile) return;
 
     const currentPassword = document.getElementById('current-password-input').value;
     const newPassword = document.getElementById('new-password-input').value;
@@ -156,7 +263,7 @@ async function savePassword(event) {
         await fetchJSON(`${API_URL}/update-user-info`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userID, currentPassword, newPassword })
+            body: JSON.stringify({ userId: loggedInUserID, currentPassword, newPassword })
         });
 
         document.getElementById('password-form').reset();
@@ -180,5 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('account-form')?.addEventListener('submit', saveAccount);
     document.getElementById('password-form')?.addEventListener('submit', savePassword);
     document.getElementById('logout-btn')?.addEventListener('click', logout);
-    loadAccount();
+    document.getElementById('bio-input')?.addEventListener('input', updateBioCount);
+    loadProfile();
 });
