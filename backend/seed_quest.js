@@ -1,13 +1,13 @@
 const http = require('http');
 
 const questData = {
-  questID: "QST00002",
-  title: "Order in a language you don't speak",
-  banner: "☕️",
-  description: "Find a café, restaurant, or food stall. Order something using zero English (or your native language) and strike up a conversation with the server. No Google Translate allowed. Whatever happens, happens.",
-  tags: ["social", "food", "communication", "awkward"],
-  badges: ["easy", "solo", "group"],
-  baseXP: 120
+  questID: "QST00007",
+  title: "Go to a retro arcade.",
+  banner: "🕹️",
+  description: "Go back a couple of decades and visit a retro arcade (if there is still one left in your city). Drag your friends along to see if they are up for the throwback to the past.",
+  tags: ["chaotic", "explore"],
+  badges: ["medium", "solo", "group"],
+  baseXP: 180
 };
 
 const data = JSON.stringify(questData);

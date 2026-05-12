@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questure - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/profile.css">
+    <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
+    <script src="../js/auth-guard.js"></script>
+    <link rel="icon" href="../favicon.png">
+</head>
+
+<body>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-text">Questure</span>
+                <span class="logo-sub">Side quests worth doing</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <span class="nav-section-label">// MAIN</span>
+                <a href="./home.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
+                </a>
+                <a href="./discover.html" class="nav-item active">
+                    <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-bolt"></i></span> My Quests
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-map"></i></span> Map View
+                </a>
+
+                <span class="nav-section-label">// SOCIAL</span>
+                <a href="./friends.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span> Friends
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
+                </a>
+
+                <span class="nav-section-label">// YOU</span>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="profile-row">
+                    <div class="profile-avatar" id="profile-emoji">?</div>
+                    <div class="profile-info">
+                        <div id="profile-name" class="profile-name">User</div>
+                        <div class="profile-rank" id="profile-rank">Offline</div>
+                    </div>
+                    <span class="profile-cog"><i class="fa-solid fa-gear"></i></span>
+                </div>
+            </div>
+        </aside>
+        <div class="main">
+            <header class="topbar">
+                <div class="topbar-greeting">
+                    <h1 id="topbar-username">User</h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="notif-btn">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-dot" hidden></span>
+                    </div>
+                    <div class="xp-pill-top">
+                        <span class="pill-level" id="pill-level">LV.1</span>
+                        <div class="pill-divider"></div>
+                        <span class="pill-xp" id="pill-xp">0 XP</span>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="profile-header">
+                    <div class="profile-top">
+                        <div class="profile-avatar-big">❔</div>
+                        <div class="profile-info">
+                            <h1 class="profile-username">user</h1>
+                            <div class="profile-title">LV.0 · TITLE</div>
+                            <p class="profile-bio">Cool bio.</p>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn-primary">Edit profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="../js/profile.js"></script>
+</body>
+
+</html>
