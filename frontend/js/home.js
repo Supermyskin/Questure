@@ -1,6 +1,6 @@
 const userName = localStorage.getItem('userName');
 const userID = localStorage.getItem('userID');
-const API_URL = 'http://127.0.0.1:3000';
+const API_URL = 'https://questure.onrender.com';
 
 const thresholds = [
     { level: 1, xp: 0 },
