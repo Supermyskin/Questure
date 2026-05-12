@@ -217,31 +217,18 @@ async function acceptQuestInvite(button) {
 }
 
 function createQuestCard(quest, photoCount) {
-    const difficulty = quest.tags.find(t => t.toLowerCase().includes('easy') ||
-        t.toLowerCase().includes('medium') ||
-        t.toLowerCase().includes('hard')) ||
-        quest.tags[0] || 'Unknown';
-    const location = quest.tags.find(t => quest.tags[1] || 'Unknown');
-
-    const capDifficulty = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
-    const capLocation = location.charAt(0).toUpperCase() + location.slice(1).toLowerCase();
-    let diffIcon = '⚡';
-    if (capDifficulty.toLowerCase().includes('easy')) diffIcon = '🟢';
-    else if (capDifficulty.toLowerCase().includes('medium')) diffIcon = '🟡';
-    else if (capDifficulty.toLowerCase().includes('hard')) diffIcon = '🔴';
-    let locIcon = '📍';
+    const badges = (quest.tags || []).slice(0, 4);
     const progress = photoCount > 0 ? '50%' : '0%';
     const statusLabel = photoCount > 0 ? 'In progress' : 'Ready to start';
 
     const card = `
-        <div class="active-quest" data-id="${quest.questID}">
+        <div class="active-quest" data-id="${escapeHTML(quest.questID)}">
             <div class="aq-top">
-                <div class="aq-title">${quest.title}</div>
-                <span class="aq-xp">+${quest.baseXP} XP</span>
+                <div class="aq-title">${escapeHTML(quest.title)}</div>
+                <span class="aq-xp">+${Number(quest.baseXP) || 0} XP</span>
             </div>
-            <div class="aq-meta">
-                <span class="aq-meta-item">${diffIcon} ${capDifficulty}</span>
-                <span class="aq-meta-item">${locIcon} ${capLocation}</span>
+            <div class="dc-badges">
+                ${badges.map((badge) => `<span class="dc-badge">${escapeHTML(badge)}</span>`).join('')}
             </div>
             <div class="aq-bar-label">
                 <span>Progress</span>
@@ -251,8 +238,8 @@ function createQuestCard(quest, photoCount) {
                 <div class="aq-fill" style="width:${progress}"></div>
             </div>
             <div class="aq-actions">
-                <button class="btn-sm-primary view-quest-btn" data-id="${quest.questID}">View quest</button>
-                <button class="btn-sm-ghost upload-quest-btn" data-id="${quest.questID}">Upload photo</button>
+                <button class="btn-sm-primary view-quest-btn" data-id="${escapeHTML(quest.questID)}">View quest</button>
+                <button class="btn-sm-ghost upload-quest-btn" data-id="${escapeHTML(quest.questID)}">Upload photo</button>
             </div>
         </div>
     `;
