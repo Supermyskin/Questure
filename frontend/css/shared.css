@@ -11,25 +11,26 @@
 }
 
 :root {
-    --bg: #1a1525;
-    --surface: #201c2e;
-    --surface2: #252038;
-    --border: #2e2840;
-    --border2: #3d3560;
-    --purple: #7C6FCD;
-    --glow: #A78BFA;
-    --spark: #C084FC;
+    --bg: #0f1419;
+    --surface: #1a1f26;
+    --surface2: #1f252e;
+    --surface3: #242b36;
+    --border: #2d3642;
+    --border2: #3d4a5a;
+    --primary: #14b8a6;
+    --glow: #5eead4;
+    --spark: #2dd4bf;
     --green: #34d399;
-    --green-bg: #0d2620;
-    --text: #EDE9FF;
-    --muted: #8b84a8;
-    --dim: #5a5470;
-    --surface3: #2a2440;
+    --green-bg: #064e3b;
     --amber: #f59e0b;
+    --orange: #fb923c;
     --red: #f87171;
+    --text: #f0f9ff;
+    --muted: #94a3b8;
+    --dim: #64748b;
     --pixel: 'Press Start 2P', monospace;
     --body: 'Nunito', sans-serif;
-    --sidebar: 15rem;
+    --sidebar: 240px;
 }
 
 *,
@@ -77,7 +78,7 @@ body::before {
 .glow-blob-1 {
     width: 37.5rem;
     height: 37.5rem;
-    background: var(--purple);
+    background: var(--primary);
     top: -12.5rem;
     left: -6.25rem;
 }
@@ -109,7 +110,7 @@ header {
     align-items: center;
     justify-content: space-between;
     padding: 1rem 2.5rem;
-    background: rgba(26, 21, 37, 0.85);
+    background: rgba(15, 20, 25, 0.85);
     backdrop-filter: blur(0.75rem);
     border-bottom: 0.062rem solid var(--border);
 }
