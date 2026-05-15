@@ -49,7 +49,7 @@
                 <a href="#" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
                 </a>
-                <a href="#" class="nav-item">
+                <a href="./gallery.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
                 </a>
 
@@ -101,7 +101,7 @@
                             <p class="profile-bio" id="account-bio">Loading profile...</p>
                             <p class="profile-email" id="account-email"></p>
                         </div>
-                        <div class="profile-actions" id="own-profile-actions">
+                        <div class="profile-actions" id="own-profile-actions" hidden>
                             <button class="btn-primary" id="save-account-btn" form="account-form">Save changes</button>
                             <button class="btn-secondary" id="logout-btn" type="button">Log out</button>
                         </div>
@@ -109,25 +109,29 @@
                 </div>
 
                 <div class="account-grid" id="profile-details-grid">
-                    <section class="section" id="profile-edit-section">
+                    <section class="section" id="profile-edit-section" hidden>
                         <div class="section-header">
                             <span class="section-title-pixel">// PROFILE</span>
                             <span class="account-status" id="account-status">Ready</span>
                         </div>
                         <form class="section-body account-form" id="account-form">
                             <label class="field-label" for="name-input">Display name</label>
-                            <input class="field-input" id="name-input" name="name" autocomplete="name" required minlength="2">
+                            <input class="field-input" id="name-input" name="name" autocomplete="name" required
+                                minlength="2">
 
                             <label class="field-label" for="email-input">Email</label>
-                            <input class="field-input" id="email-input" name="email" type="email" autocomplete="email" required>
+                            <input class="field-input" id="email-input" name="email" type="email" autocomplete="email"
+                                required>
 
                             <label class="field-label" for="bio-input">Bio</label>
-                            <textarea class="field-input field-textarea" id="bio-input" name="bio" maxlength="180" rows="4" placeholder="Say something about your quests."></textarea>
+                            <textarea class="field-input field-textarea" id="bio-input" name="bio" maxlength="180"
+                                rows="4" placeholder="Say something about your quests."></textarea>
                             <div class="field-help"><span id="bio-count">0</span>/180</div>
 
                             <label class="field-label" for="emoji-input">Avatar emoji</label>
                             <input type="hidden" id="emoji-input" name="emoji" required>
-                            <div class="avatar-picker" id="avatar-picker" role="listbox" aria-label="Choose profile avatar"></div>
+                            <div class="avatar-picker" id="avatar-picker" role="listbox"
+                                aria-label="Choose profile avatar"></div>
                         </form>
                     </section>
 
@@ -156,25 +160,28 @@
                     </section>
                 </div>
 
-                <section class="section" id="password-section">
+                <section class="section" id="password-section" hidden>
                     <div class="section-header">
                         <span class="section-title-pixel">// PASSWORD</span>
                         <span class="account-status" id="password-status">Optional</span>
                     </div>
                     <form class="section-body account-form password-form" id="password-form">
                         <label class="field-label" for="current-password-input">Current password</label>
-                        <input class="field-input" id="current-password-input" name="currentPassword" type="password" autocomplete="current-password">
+                        <input class="field-input" id="current-password-input" name="currentPassword" type="password"
+                            autocomplete="current-password">
 
                         <label class="field-label" for="new-password-input">New password</label>
-                        <input class="field-input" id="new-password-input" name="newPassword" type="password" autocomplete="new-password" minlength="6">
+                        <input class="field-input" id="new-password-input" name="newPassword" type="password"
+                            autocomplete="new-password" minlength="6">
 
-                        <button class="btn-primary password-save" id="save-password-btn" type="submit">Update password</button>
+                        <button class="btn-primary password-save" id="save-password-btn" type="submit">Update
+                            password</button>
                     </form>
                 </section>
             </div>
         </div>
     </div>
-        <script src="../js/profile.js"></script>
+    <script src="../js/profile.js"></script>
 </body>
 
 </html>

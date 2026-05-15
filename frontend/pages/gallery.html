@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questure - Home</title>
+    <title>Questure - Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../css/shared.css">
-    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/gallery.css">
     <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
     <script src="../js/auth-guard.js"></script>
     <link rel="icon" href="../favicon.png">
@@ -29,7 +29,7 @@
 
             <nav class="sidebar-nav">
                 <span class="nav-section-label">// MAIN</span>
-                <a href="#" class="nav-item active">
+                <a href="./home.html" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
                 </a>
                 <a href="./discover.html" class="nav-item">
@@ -49,7 +49,7 @@
                 <a href="#" class="nav-item">
                     <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
                 </a>
-                <a href="./gallery.html" class="nav-item">
+                <a href="./gallery.html" class="nav-item active">
                     <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
                 </a>
 
@@ -76,9 +76,8 @@
         <div class="main">
             <header class="topbar">
                 <div class="topbar-greeting">
-                    <h1>Hey, <span id="profile-name-topbar">user</span></i></h1>
-                    <p>// <span id="active-quests-count">0</span> active quests · <span id="current-location">Unknown
-                            Location</span></p>
+                    <h1>Explore <span id="profile-name-topbar">Gallery</span></i></h1>
+                    <p>// <span id="pictures-count">0</span> pictures</p>
                 </div>
                 <div class="topbar-right">
                     <div class="notif-btn">
@@ -86,36 +85,32 @@
                         <span class="notif-dot" hidden></span>
                     </div>
                     <div class="xp-pill-top">
-                        <span class="pill-level" id="pill-level">LV.0</span>
+                        <span class="pill-level" id="pill-level">LV.1</span>
                         <div class="pill-divider"></div>
                         <span class="pill-xp" id="pill-xp">0 XP</span>
                     </div>
                 </div>
             </header>
             <div class="content">
-                <div class="section">
-                    <div class="section-header">
-                        <span class="section-title-pixel">// IN PROGRESS</span>
-                        <a href="./discover.html" class="sec-link" style="font-size:11px">View all →</a>
+                <section class="gallery-section">
+                    <div class="gallery-toolbar">
+                        <div>
+                            <span class="section-title-pixel">// QUEST PHOTOS</span>
+                            <p class="gallery-subtitle">Proof from active and completed quests.</p>
+                        </div>
+                        <button type="button" class="gallery-refresh" id="gallery-refresh" title="Refresh gallery"
+                            aria-label="Refresh gallery">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
                     </div>
-                    <div class="section-body" id="quests-list">
+                    <div id="gallery-grid" class="gallery-grid">
+                        <div class="gallery-empty">Loading gallery...</div>
                     </div>
-                </div>
-                <div class="section">
-                    <div class="section-header">
-                        <span class="section-title-pixel">// FRIEND ACTIVITY</span>
-                    </div>
-                    <div class="section-body" id="quest-invites-list">
-                        <div class="feed-empty">No friend activity right now.</div>
-                    </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>
-
-
-    <script src="../js/home.js"></script>
-
+    <script src="../js/gallery.js"></script>
 </body>
 
 </html>

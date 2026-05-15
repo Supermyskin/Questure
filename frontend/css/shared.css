@@ -174,3 +174,7 @@ header {
 .nav-links a:hover {
     color: var(--text);
 }
+
+[hidden] {
+    display: none !important;
+}

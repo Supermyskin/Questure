@@ -9,27 +9,27 @@ const discoverState = {
 
 const thresholds = [
     { level: 1, xp: 0 },
-    { level: 2, xp: 500 },
-    { level: 3, xp: 1200 },
-    { level: 4, xp: 2500 },
-    { level: 5, xp: 4500 },
-    { level: 6, xp: 7000 },
-    { level: 7, xp: 10000 },
-    { level: 8, xp: 14000 },
-    { level: 9, xp: 19000 },
-    { level: 10, xp: 25000 },
+    { level: 2, xp: 250 },
+    { level: 3, xp: 600 },
+    { level: 4, xp: 1250 },
+    { level: 5, xp: 2250 },
+    { level: 6, xp: 3500 },
+    { level: 7, xp: 5000 },
+    { level: 8, xp: 7000 },
+    { level: 9, xp: 9500 },
+    { level: 10, xp: 12500 },
 ];
 
 function xpTitleLookup(xp) {
-    if (xp < 500) return "Beginner";
-    if (xp < 1200) return "Newcomer";
-    if (xp < 2500) return "Explorer";
-    if (xp < 4500) return "Adventurer";
-    if (xp < 7000) return "Regular";
-    if (xp < 10000) return "Experienced";
-    if (xp < 14000) return "Advanced";
-    if (xp < 19000) return "Expert";
-    if (xp < 25000) return "Veteran";
+    if (xp < 250) return "Beginner";
+    if (xp < 600) return "Newcomer";
+    if (xp < 1250) return "Explorer";
+    if (xp < 2250) return "Adventurer";
+    if (xp < 3500) return "Regular";
+    if (xp < 5000) return "Experienced";
+    if (xp < 7000) return "Advanced";
+    if (xp < 9500) return "Expert";
+    if (xp < 12500) return "Veteran";
     return "Elite";
 }
 
@@ -38,7 +38,7 @@ function xpToLevel(xp) {
     for (let i = thresholds.length - 1; i >= 0; i--) {
         if (xp >= thresholds[i].xp) {
             if (i === thresholds.length - 1) {
-                return last.level + Math.floor((xp - last.xp) / 8000);
+                return last.level + Math.floor((xp - last.xp) / 4000);
             }
             return thresholds[i].level;
         }

@@ -4,28 +4,28 @@ const API_URL = 'https://questure.onrender.com';
 
 const thresholds = [
     { level: 1, xp: 0 },
-    { level: 2, xp: 500 },
-    { level: 3, xp: 1200 },
-    { level: 4, xp: 2500 },
-    { level: 5, xp: 4500 },
-    { level: 6, xp: 7000 },
-    { level: 7, xp: 10000 },
-    { level: 8, xp: 14000 },
-    { level: 9, xp: 19000 },
-    { level: 10, xp: 25000 },
+    { level: 2, xp: 250 },
+    { level: 3, xp: 600 },
+    { level: 4, xp: 1250 },
+    { level: 5, xp: 2250 },
+    { level: 6, xp: 3500 },
+    { level: 7, xp: 5000 },
+    { level: 8, xp: 7000 },
+    { level: 9, xp: 9500 },
+    { level: 10, xp: 12500 },
 ];
 
 function xpTitleLookup(xp) {
-    if (xp < 500) return "Beginner";
-    else if (xp < 1200) return "Newcomer";
-    else if (xp < 2500) return "Explorer";
-    else if (xp < 4500) return "Adventurer";
-    else if (xp < 7000) return "Regular";
-    else if (xp < 10000) return "Experienced";
-    else if (xp < 14000) return "Advanced";
-    else if (xp < 19000) return "Expert";
-    else if (xp < 25000) return "Veteran";
-    else return "Elite";
+    if (xp < 250) return "Beginner";
+    if (xp < 600) return "Newcomer";
+    if (xp < 1250) return "Explorer";
+    if (xp < 2250) return "Adventurer";
+    if (xp < 3500) return "Regular";
+    if (xp < 5000) return "Experienced";
+    if (xp < 7000) return "Advanced";
+    if (xp < 9500) return "Expert";
+    if (xp < 12500) return "Veteran";
+    return "Elite";
 }
 
 function xpToLevel(xp) {
@@ -34,7 +34,7 @@ function xpToLevel(xp) {
         if (xp >= thresholds[i].xp) {
             if (i === thresholds.length - 1) {
                 const extraXp = xp - last.xp;
-                const extraLevels = Math.floor(extraXp / 8000);
+                const extraLevels = Math.floor(extraXp / 4000);
                 return last.level + extraLevels;
             }
             return thresholds[i].level;

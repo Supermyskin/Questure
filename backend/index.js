@@ -226,12 +226,10 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     const newUser = new User({
@@ -240,9 +238,7 @@ app.post('/register', async (req, res) => {
       password: hashedPassword,
       emoji: randomEmoji
     });
-
     await newUser.save();
-
     const token = jwt.sign({ userId: newUser.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ message: "Registration successful", token, userId: newUser.userId, name: newUser.name });
   } catch (err) {
@@ -255,16 +251,13 @@ app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
     const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ message: "Login successful", token, userId: user.userId, name: user.name });
   } catch (err) {
@@ -284,7 +277,6 @@ app.get('/fetch-user-info', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     res.json({
       name: user.name,
       email: user.email,
@@ -309,12 +301,10 @@ app.get('/fetch-profile-info', async (req, res) => {
     if (!profileUserId) {
       return res.status(400).json({ message: "UserID is required" });
     }
-
     const user = await User.findOne({ userId: profileUserId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const isOwnProfile = viewerUserId === profileUserId;
     const profile = {
       userId: user.userId,
@@ -326,11 +316,9 @@ app.get('/fetch-profile-info', async (req, res) => {
       doneQuests: user.doneQuests || [],
       isOwnProfile
     };
-
     if (isOwnProfile) {
       profile.email = user.email;
     }
-
     res.json(profile);
   } catch (err) {
     console.error(err);
@@ -344,50 +332,42 @@ app.patch('/update-user-info', async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
-
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const trimmedName = typeof name === 'string' ? name.trim() : undefined;
     const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
     const trimmedEmoji = typeof emoji === 'string' ? emoji.trim() : undefined;
     const trimmedBio = typeof bio === 'string' ? bio.trim() : undefined;
-
     if (trimmedName !== undefined) {
       if (trimmedName.length < 2) {
         return res.status(400).json({ message: "Name must be at least 2 characters" });
       }
       user.name = trimmedName;
     }
-
     if (trimmedEmail !== undefined) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
         return res.status(400).json({ message: "Enter a valid email address" });
       }
-
       const existingUser = await User.findOne({ email: trimmedEmail, userId: { $ne: userId } });
       if (existingUser) {
         return res.status(400).json({ message: "Email is already in use" });
       }
       user.email = trimmedEmail;
     }
-
     if (trimmedEmoji !== undefined) {
       if (trimmedEmoji.length === 0 || trimmedEmoji.length > 12) {
         return res.status(400).json({ message: "Choose a valid emoji" });
       }
       user.emoji = trimmedEmoji;
     }
-
     if (trimmedBio !== undefined) {
       if (trimmedBio.length > 180) {
         return res.status(400).json({ message: "Bio must be 180 characters or less" });
       }
       user.bio = trimmedBio;
     }
-
     if (newPassword) {
       if (!currentPassword) {
         return res.status(400).json({ message: "Current password is required" });
@@ -395,17 +375,13 @@ app.patch('/update-user-info', async (req, res) => {
       if (newPassword.length < 6) {
         return res.status(400).json({ message: "New password must be at least 6 characters" });
       }
-
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
-
       user.password = await bcrypt.hash(newPassword, 10);
     }
-
     await user.save();
-
     res.json({
       message: "Account updated",
       user: {
@@ -431,18 +407,15 @@ app.get('/friends', async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
-
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const [friends, incomingRequests, outgoingRequests] = await Promise.all([
       getPublicUsersByIds(user.friends),
       getPublicUsersByIds(user.incomingFriendRequests),
       getPublicUsersByIds(user.outgoingFriendRequests)
     ]);
-
     res.json({ friends, incomingRequests, outgoingRequests });
   } catch (err) {
     console.error(err);
@@ -454,20 +427,16 @@ app.get('/search-users', async (req, res) => {
   try {
     const userId = req.query.userID || req.query.userId;
     const query = (req.query.q || '').trim();
-
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
-
     if (query.length < 2) {
       return res.json({ users: [] });
     }
-
     const currentUser = await User.findOne({ userId });
     if (!currentUser) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const users = await User.find({
       userId: { $ne: userId },
@@ -478,11 +447,9 @@ app.get('/search-users', async (req, res) => {
     })
       .select('userId name emoji xp')
       .limit(10);
-
     const friendIds = new Set(currentUser.friends || []);
     const incomingIds = new Set(currentUser.incomingFriendRequests || []);
     const outgoingIds = new Set(currentUser.outgoingFriendRequests || []);
-
     res.json({
       users: users.map((user) => {
         let status = 'none';
@@ -505,24 +472,19 @@ app.post('/send-friend-request', async (req, res) => {
     if (!userId || !targetUserId) {
       return res.status(400).json({ message: "UserID and targetUserID are required" });
     }
-
     if (userId === targetUserId) {
       return res.status(400).json({ message: "You cannot add yourself as a friend" });
     }
-
     const [user, targetUser] = await Promise.all([
       User.findOne({ userId }),
       User.findOne({ userId: targetUserId })
     ]);
-
     if (!user || !targetUser) {
       return res.status(404).json({ message: "User not found" });
     }
-
     if ((user.friends || []).includes(targetUserId)) {
       return res.status(400).json({ message: "You are already friends" });
     }
-
     if ((user.incomingFriendRequests || []).includes(targetUserId)) {
       user.incomingFriendRequests = user.incomingFriendRequests.filter((id) => id !== targetUserId);
       targetUser.outgoingFriendRequests = (targetUser.outgoingFriendRequests || []).filter((id) => id !== userId);
@@ -531,14 +493,11 @@ app.post('/send-friend-request', async (req, res) => {
       await Promise.all([user.save(), targetUser.save()]);
       return res.json({ message: "Friend request accepted" });
     }
-
     if ((user.outgoingFriendRequests || []).includes(targetUserId)) {
       return res.status(400).json({ message: "Friend request already sent" });
     }
-
     user.outgoingFriendRequests = [...new Set([...(user.outgoingFriendRequests || []), targetUserId])];
     targetUser.incomingFriendRequests = [...new Set([...(targetUser.incomingFriendRequests || []), userId])];
-
     await Promise.all([user.save(), targetUser.save()]);
     res.json({ message: "Friend request sent" });
   } catch (err) {
@@ -1259,6 +1218,72 @@ app.get('/fetch-quest-photos', async (req, res) => {
         owner: usersById.get(submission.userId) || null,
         canDelete: submission.userId === userId
       }))
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get('/fetch-gallery-photos', async (req, res) => {
+  try {
+    const userId = req.query.userID || req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "UserID is required" });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const questIds = [...new Set([...(user.activeQuests || []), ...(user.doneQuests || [])])];
+    if (questIds.length === 0) {
+      return res.json({ photos: [] });
+    }
+
+    const participantIdsByQuest = new Map();
+    await Promise.all(questIds.map(async (questID) => {
+      const participantIds = await getQuestPhotoParticipantIds(userId, questID);
+      participantIdsByQuest.set(questID, participantIds || [userId]);
+    }));
+
+    const photoFilters = [...participantIdsByQuest.entries()]
+      .filter(([, participantIds]) => participantIds.length > 0)
+      .map(([questID, participantIds]) => ({ questID, userId: { $in: participantIds } }));
+
+    if (photoFilters.length === 0) {
+      return res.json({ photos: [] });
+    }
+
+    const [submissions, quests] = await Promise.all([
+      QuestSubmission.find({ $or: photoFilters })
+        .sort({ createdAt: -1 })
+        .select('userId questID photoUrl createdAt'),
+      Quest.find({ questID: { $in: questIds } }).select('questID title banner')
+    ]);
+
+    const ownerIds = [...new Set(submissions.map((submission) => submission.userId))];
+    const usersById = await getPublicUsersByIdMap(ownerIds);
+    const questsById = new Map(quests.map((quest) => [quest.questID, quest]));
+
+    res.json({
+      photos: submissions.map((submission) => {
+        const quest = questsById.get(submission.questID);
+        return {
+          _id: submission._id,
+          userId: submission.userId,
+          questID: submission.questID,
+          photoUrl: submission.photoUrl,
+          createdAt: submission.createdAt,
+          owner: usersById.get(submission.userId) || null,
+          quest: quest ? {
+            questID: quest.questID,
+            title: quest.title,
+            banner: quest.banner
+          } : null
+        };
+      })
     });
   } catch (err) {
     console.error(err);
