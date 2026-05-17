@@ -838,12 +838,21 @@
     color: #fecaca;
 }
 
-.list-empty {
-    color: var(--dim);
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 0.875rem;
-    border: 0.062rem dashed var(--border2);
-    border-radius: 0.5rem;
+@media (max-width: 768px) {
+    .quest-title-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .xp-big {
+        align-self: flex-start;
+    }
+
+    .quest-hero-body {
+        padding: 1.25rem;
+    }
+
+    .upload-zone {
+        padding: 1.5rem 1rem;
+    }
 }

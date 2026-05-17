@@ -440,32 +440,13 @@
 }
 
 @media (max-width: 760px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-    }
-
-    .layout {
-        flex-direction: column;
-    }
-
-    .main {
-        margin-left: 0;
-    }
-
     .topbar,
     .gallery-toolbar {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .content {
-        padding: 1rem;
-    }
-
     .gallery-grid {
         grid-template-columns: 1fr;
-        padding: 1rem;
     }
 }

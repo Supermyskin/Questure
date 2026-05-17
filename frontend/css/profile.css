@@ -595,29 +595,12 @@
 }
 
 @media (max-width: 900px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-    }
-
-    .layout,
     .profile-top,
     .profile-actions {
         flex-direction: column;
     }
 
-    .main {
-        margin-left: 0;
-    }
-
     .account-grid {
         grid-template-columns: 1fr;
-    }
-
-    .content,
-    .topbar {
-        padding-left: 1rem;
-        padding-right: 1rem;
     }
 }

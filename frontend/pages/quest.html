@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../css/quest.css">
     <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
     <script src="../js/auth-guard.js"></script>
+    <script src="../js/shared.js"></script>
     <link rel="icon" href="../favicon.png">
 </head>
 
@@ -21,10 +22,13 @@
     <div class="glow-blob glow-blob-3"></div>
 
     <div class="layout">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <span class="logo-text">Questure</span>
                 <span class="logo-sub">Side quests worth doing</span>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
             <nav class="sidebar-nav">
@@ -81,6 +85,9 @@
                     <span class="current" id="current">Quest unavailable</span>
                 </div>
                 <div class="topbar-right">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                     <div class="notif-btn">
                         <i class="fa-solid fa-bell"></i>
                         <span class="notif-dot" hidden></span>
