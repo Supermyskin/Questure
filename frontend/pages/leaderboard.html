@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questure Leaderboard</title>
+    <link rel="stylesheet" href="../css/leaderboard.css">
+</head>
+
+<body>
+    <header class="page-header">
+        <div>
+            <h1>Questure Leaderboard</h1>
+            <p>See the top players ranked by XP.</p>
+        </div>
+        <a class="return-link" href="./home.html">Return</a>
+    </header>
+
+    <main class="page-main">
+        <section class="control-panel">
+            <label for="top-count">Show top</label>
+            <input id="top-count" type="number" min="1" max="100" value="5">
+            <span>players</span>
+            <button id="update-btn">Update</button>
+            <label for="friends-only" class="friends-filter">
+                <input type="checkbox" id="friends-only">
+                Friends Only
+            </label>
+        </section>
+
+        <section class="leaderboard-container" id="leaderboardContainer">
+            <!-- Cards appear here -->
+        </section>
+    </main>
+
+    <script src="../js/leaderboard.js"></script>
+</body>
+
+</html>
