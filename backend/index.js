@@ -74,12 +74,11 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-userSchema.pre('validate', function setUsernameKey(next) {
+userSchema.pre('validate', function setUsernameKey() {
   if (this.name) {
     this.name = this.name.trim();
     this.usernameKey = normalizeUsername(this.name);
   }
-  next();
 });
 
 const questSchema = new mongoose.Schema({
