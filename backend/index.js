@@ -28,9 +28,24 @@ const emojis = [
   '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸'
 ];
 
+function normalizeUsername(name) {
+  return typeof name === 'string' ? name.trim().toLowerCase() : '';
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const userSchema = new mongoose.Schema({
   userId: { type: String, default: () => uuidv4(), unique: true },
   name: { type: String, required: true },
+  usernameKey: {
+    type: String,
+    index: {
+      unique: true,
+      partialFilterExpression: { usernameKey: { $type: 'string' } }
+    }
+  },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   emoji: { type: String, required: true },
@@ -57,6 +72,14 @@ const userSchema = new mongoose.Schema({
     }],
     default: []
   }
+});
+
+userSchema.pre('validate', function setUsernameKey(next) {
+  if (this.name) {
+    this.name = this.name.trim();
+    this.usernameKey = normalizeUsername(this.name);
+  }
+  next();
 });
 
 const questSchema = new mongoose.Schema({
@@ -89,6 +112,26 @@ const User = mongoose.model('User', userSchema);
 const Quest = mongoose.model('Quest', questSchema);
 const QuestSubmission = mongoose.model('QuestSubmission', questSubmissionSchema);
 const QuestSession = mongoose.model('QuestSession', questSessionSchema);
+
+
+
+async function findUserByUsername(name, excludedUserId) {
+  const normalizedName = normalizeUsername(name);
+  if (!normalizedName) return null;
+
+  const query = {
+    $or: [
+      { usernameKey: normalizedName },
+      { name: new RegExp(`^${escapeRegExp(name.trim())}$`, 'i') }
+    ]
+  };
+
+  if (excludedUserId) {
+    query.userId = { $ne: excludedUserId };
+  }
+
+  return User.findOne(query);
+}
 
 function toPublicUser(user) {
   return {
@@ -226,15 +269,36 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+    if (trimmedName.length < 2) {
+      return res.status(400).json({ message: "Name must be at least 2 characters" });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return res.status(400).json({ message: "Enter a valid email address" });
+    }
+    if (typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const [existingEmail, existingUsername] = await Promise.all([
+      User.findOne({ email: trimmedEmail }),
+      findUserByUsername(trimmedName)
+    ]);
+
+    if (existingEmail) {
       return res.status(400).json({ message: "User already exists" });
     }
+    if (existingUsername) {
+      return res.status(400).json({ message: "Username is already in use" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     const newUser = new User({
-      name,
-      email,
+      name: trimmedName,
+      email: trimmedEmail,
       password: hashedPassword,
       emoji: randomEmoji
     });
@@ -243,6 +307,12 @@ app.post('/register', async (req, res) => {
     res.json({ message: "Registration successful", token, userId: newUser.userId, name: newUser.name });
   } catch (err) {
     console.error(err);
+    if (err.code === 11000 && err.keyPattern?.usernameKey) {
+      return res.status(400).json({ message: "Username is already in use" });
+    }
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({ message: "User already exists" });
+    }
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -326,6 +396,46 @@ app.get('/fetch-profile-info', async (req, res) => {
   }
 });
 
+app.get('/leaderboard', async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+    const userId = req.query.userID || req.query.userId;
+
+    const [users, totalPlayers, currentUser] = await Promise.all([
+      User.find({})
+        .select('userId name emoji xp doneQuests activeQuests')
+        .sort({ xp: -1, name: 1 })
+        .limit(limit),
+      User.countDocuments({}),
+      userId ? User.findOne({ userId }).select('userId xp') : null
+    ]);
+
+    let currentUserRank = null;
+    if (currentUser) {
+      const usersAhead = await User.countDocuments({ xp: { $gt: currentUser.xp || 0 } });
+      currentUserRank = usersAhead + 1;
+    }
+
+    res.json({
+      players: users.map((user, index) => ({
+        rank: index + 1,
+        userId: user.userId,
+        name: user.name,
+        emoji: user.emoji || '❔',
+        xp: user.xp || 0,
+        activeQuestCount: (user.activeQuests || []).length,
+        completedQuestCount: (user.doneQuests || []).length,
+        isCurrentUser: user.userId === userId
+      })),
+      totalPlayers,
+      currentUserRank
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.patch('/update-user-info', async (req, res) => {
   try {
     const { userId, name, email, emoji, bio, currentPassword, newPassword } = req.body;
@@ -343,6 +453,10 @@ app.patch('/update-user-info', async (req, res) => {
     if (trimmedName !== undefined) {
       if (trimmedName.length < 2) {
         return res.status(400).json({ message: "Name must be at least 2 characters" });
+      }
+      const existingUsername = await findUserByUsername(trimmedName, userId);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username is already in use" });
       }
       user.name = trimmedName;
     }
@@ -397,6 +511,12 @@ app.patch('/update-user-info', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    if (err.code === 11000 && err.keyPattern?.usernameKey) {
+      return res.status(400).json({ message: "Username is already in use" });
+    }
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({ message: "Email is already in use" });
+    }
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -1197,18 +1317,14 @@ app.get('/fetch-quest-photos', async (req, res) => {
     if (!userId || !questID) {
       return res.status(400).json({ message: "UserID and QuestID are required" });
     }
-
     const participantIds = await getQuestPhotoParticipantIds(userId, questID);
     if (!participantIds) {
       return res.status(403).json({ message: "You do not have access to these quest photos" });
     }
-
     const submissions = await QuestSubmission.find({ userId: { $in: participantIds }, questID })
       .sort({ createdAt: -1 })
       .select('userId photoUrl createdAt');
-
     const usersById = await getPublicUsersByIdMap(participantIds);
-
     res.json({
       photos: submissions.map((submission) => ({
         _id: submission._id,
@@ -1231,42 +1347,34 @@ app.get('/fetch-gallery-photos', async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "UserID is required" });
     }
-
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const questIds = [...new Set([...(user.activeQuests || []), ...(user.doneQuests || [])])];
     if (questIds.length === 0) {
       return res.json({ photos: [] });
     }
-
     const participantIdsByQuest = new Map();
     await Promise.all(questIds.map(async (questID) => {
       const participantIds = await getQuestPhotoParticipantIds(userId, questID);
       participantIdsByQuest.set(questID, participantIds || [userId]);
     }));
-
     const photoFilters = [...participantIdsByQuest.entries()]
       .filter(([, participantIds]) => participantIds.length > 0)
       .map(([questID, participantIds]) => ({ questID, userId: { $in: participantIds } }));
-
     if (photoFilters.length === 0) {
       return res.json({ photos: [] });
     }
-
     const [submissions, quests] = await Promise.all([
       QuestSubmission.find({ $or: photoFilters })
         .sort({ createdAt: -1 })
         .select('userId questID photoUrl createdAt'),
       Quest.find({ questID: { $in: questIds } }).select('questID title banner')
     ]);
-
     const ownerIds = [...new Set(submissions.map((submission) => submission.userId))];
     const usersById = await getPublicUsersByIdMap(ownerIds);
     const questsById = new Map(quests.map((quest) => [quest.questID, quest]));
-
     res.json({
       photos: submissions.map((submission) => {
         const quest = questsById.get(submission.questID);

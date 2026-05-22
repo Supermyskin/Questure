@@ -1,13 +1,13 @@
 const http = require('http');
 
 const questData = {
-  questID: "QST00007",
-  title: "Go to a retro arcade.",
-  banner: "🕹️",
-  description: "Go back a couple of decades and visit a retro arcade (if there is still one left in your city). Drag your friends along to see if they are up for the throwback to the past.",
-  tags: ["chaotic", "explore"],
-  badges: ["medium", "solo", "group"],
-  baseXP: 180
+  questID: "QST00012",
+  title: "Go to a competition you've never trained for.",
+  banner: "⚽️",
+  description: "There is always a competition happening. Why not join one you haven't trained for and try to get 1st place.",
+  tags: ["performance", "awkward", "chaotic"],
+  badges: ["medium", "group", "solo"],
+  baseXP: 220
 };
 
 const data = JSON.stringify(questData);
