@@ -333,11 +333,11 @@
 
 .profile-header {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 32px;
-    padding-bottom: 6px;
-    margin-bottom: 24px;
+    border: 0.062rem solid var(--border);
+    border-radius: 0.875rem;
+    padding: 2.000rem;
+    padding-bottom: 0.375rem;
+    margin-bottom: 1.500rem;
     position: relative;
     overflow: hidden;
 }
@@ -348,27 +348,27 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 0.188rem;
     background: linear-gradient(90deg, var(--primary), var(--spark));
 }
 
 .profile-top {
     display: flex;
-    gap: 24px;
+    gap: 1.500rem;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 1.500rem;
 }
 
 .profile-avatar-big {
-    width: 100px;
-    height: 100px;
-    border-radius: 16px;
+    width: 6.250rem;
+    height: 6.250rem;
+    border-radius: 1.000rem;
     background: var(--surface2);
-    border: 2px solid var(--border2);
+    border: 0.125rem solid var(--border2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 3.000rem;
     flex-shrink: 0;
 }
 
@@ -377,28 +377,28 @@
 }
 
 .profile-username {
-    font-size: 32px;
+    font-size: 2.000rem;
     font-weight: 900;
     color: var(--text);
-    margin-bottom: 6px;
+    margin-bottom: 0.375rem;
     letter-spacing: -0.02em;
 }
 
 .profile-title {
     font-family: var(--pixel);
-    font-size: 9px;
+    font-size: 0.562rem;
     color: var(--glow);
     letter-spacing: 0.06em;
-    margin-bottom: 12px;
+    margin-bottom: 0.750rem;
 }
 
 .profile-bio {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: var(--muted);
     font-weight: 600;
     line-height: 1.6;
-    margin-bottom: 8px;
-    max-width: 480px;
+    margin-bottom: 0.500rem;
+    max-width: 30.000rem;
 }
 
 .profile-email {
@@ -410,25 +410,25 @@
 
 .profile-actions {
     display: flex;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
 .btn-primary {
     background: var(--primary);
     color: var(--text);
     font-family: var(--body);
-    font-size: 13px;
+    font-size: 0.812rem;
     font-weight: 800;
-    padding: 10px 20px;
+    padding: 0.625rem 1.250rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 0.500rem;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
 }
 
 .btn-primary:hover {
     background: var(--glow);
-    transform: translateY(-1px);
+    transform: translateY(-0.062rem);
 }
 
 .btn-primary:disabled,
@@ -442,11 +442,11 @@
     background: var(--surface2);
     color: var(--muted);
     font-family: var(--body);
-    font-size: 13px;
+    font-size: 0.812rem;
     font-weight: 800;
-    padding: 10px 18px;
-    border: 1px solid var(--border2);
-    border-radius: 8px;
+    padding: 0.625rem 1.125rem;
+    border: 0.062rem solid var(--border2);
+    border-radius: 0.500rem;
     cursor: pointer;
     transition: background 0.15s, color 0.15s, transform 0.1s;
 }
@@ -454,7 +454,7 @@
 .btn-secondary:hover {
     background: var(--surface3);
     color: var(--text);
-    transform: translateY(-1px);
+    transform: translateY(-0.062rem);
 }
 
 .account-grid {
@@ -485,8 +485,8 @@
     width: 100%;
     min-height: 2.75rem;
     background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
+    border: 0.062rem solid var(--border2);
+    border-radius: 0.500rem;
     color: var(--text);
     font-family: var(--body);
     font-size: 0.937rem;
@@ -498,7 +498,7 @@
 
 .field-input:focus {
     border-color: var(--glow);
-    box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.14);
+    box-shadow: 0 0 0 0.188rem rgba(45, 212, 191, 0.14);
 }
 
 .field-textarea {
@@ -526,8 +526,8 @@
     width: 2.75rem;
     height: 2.75rem;
     background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
+    border: 0.062rem solid var(--border2);
+    border-radius: 0.500rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -539,13 +539,13 @@
 .avatar-option:hover {
     background: var(--surface3);
     border-color: var(--glow);
-    transform: translateY(-1px);
+    transform: translateY(-0.062rem);
 }
 
 .avatar-option.selected {
     background: rgba(20, 184, 166, 0.22);
     border-color: var(--glow);
-    box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+    box-shadow: 0 0 0 0.188rem rgba(45, 212, 191, 0.12);
 }
 
 .avatar-option:disabled {
@@ -563,8 +563,8 @@
 .stat-card {
     min-height: 5.75rem;
     background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
+    border: 0.062rem solid var(--border2);
+    border-radius: 0.500rem;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -594,7 +594,7 @@
     margin-top: 0.35rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 56.250rem) {
     .profile-top,
     .profile-actions {
         flex-direction: column;

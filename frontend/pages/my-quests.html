@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questure - My Quests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/my-quests.css">
+    <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="../js/shared.js"></script>
+    <link rel="icon" href="../favicon.png">
+</head>
+
+<body>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-text">Questure</span>
+                <span class="logo-sub">Side quests worth doing</span>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <span class="nav-section-label">// MAIN</span>
+                <a href="./home.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
+                </a>
+                <a href="./discover.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
+                </a>
+                <a href="./my-quests.html" class="nav-item active">
+                    <span class="nav-icon"><i class="fa-solid fa-bolt"></i></span> My Quests
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-map"></i></span> Map View
+                </a>
+
+                <span class="nav-section-label">// SOCIAL</span>
+                <a href="./friends.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span> Friends
+                </a>
+                <a href="../../Boyan_N_Nikolov/leaderboard.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
+                </a>
+                <a href="./gallery.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
+                </a>
+
+                <span class="nav-section-label">// YOU</span>
+                <a href="./profile.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile
+                </a>
+                <a href="./profile.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="profile-row">
+                    <div class="profile-avatar" id="profile-emoji">?</div>
+                    <div class="profile-info">
+                        <div id="profile-name" class="profile-name">User</div>
+                        <div class="profile-rank" id="profile-rank">Offline</div>
+                    </div>
+                    <span class="profile-cog"><i class="fa-solid fa-gear"></i></span>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main">
+            <header class="topbar">
+                <div class="topbar-greeting">
+                    <h1>My <span>Quests</span></h1>
+                    <p>// <span id="active-quests-count">0</span> active · <span id="done-quests-count">0</span>
+                        completed</p>
+                </div>
+                <div class="topbar-right">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="notif-btn">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-dot" hidden></span>
+                    </div>
+                    <div class="xp-pill-top">
+                        <span class="pill-level" id="pill-level">LV.0</span>
+                        <div class="pill-divider"></div>
+                        <span class="pill-xp" id="pill-xp">0 XP</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content">
+                <section class="quest-summary">
+                    <div class="summary-tile">
+                        <span class="summary-label">Active</span>
+                        <strong id="stat-active">0</strong>
+                    </div>
+                    <div class="summary-tile">
+                        <span class="summary-label">Completed</span>
+                        <strong id="stat-completed">0</strong>
+                    </div>
+                    <div class="summary-tile">
+                        <span class="summary-label">Total XP</span>
+                        <strong id="stat-xp">0</strong>
+                    </div>
+                </section>
+
+                <section class="quest-toolbar" aria-label="Quest filters">
+                    <div class="quest-tabs" role="tablist">
+                        <button class="quest-tab active" type="button" data-filter="active">Active</button>
+                        <button class="quest-tab" type="button" data-filter="completed">Completed</button>
+                        <button class="quest-tab" type="button" data-filter="all">All</button>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="my-quest-search" type="text" placeholder="Search my quests...">
+                    </div>
+                </section>
+
+                <section class="quest-list-section">
+                    <div class="section-header">
+                        <span class="section-title-pixel">// QUEST LOG</span>
+                        <a href="./discover.html" class="sec-link">Find more</a>
+                    </div>
+                    <div class="quest-list" id="my-quests-list">
+                        <div class="quest-empty">Loading your quests...</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/my-quests.js"></script>
+</body>
+
+</html>

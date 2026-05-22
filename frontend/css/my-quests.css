@@ -172,6 +172,25 @@
     z-index: 40;
 }
 
+.topbar-greeting h1 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.1;
+}
+
+.topbar-greeting h1 span {
+    color: var(--glow);
+}
+
+.topbar-greeting p {
+    font-size: 0.75rem;
+    color: var(--dim);
+    font-weight: 700;
+    margin-top: 0.125rem;
+    font-family: var(--pixel);
+}
+
 .topbar-right {
     display: flex;
     align-items: center;
@@ -205,7 +224,6 @@
     height: 0.438rem;
     background: var(--glow);
     border-radius: 50%;
-    border: 1.0.312rem solid var(--bg);
 }
 
 .xp-pill-top {
@@ -218,10 +236,18 @@
     gap: 0.5rem;
 }
 
-.xp-pill-top .pill-level {
+.xp-pill-top .pill-level,
+.xp-pill-top .pill-xp {
     font-family: var(--pixel);
     font-size: 0.438rem;
+}
+
+.xp-pill-top .pill-level {
     color: var(--glow);
+}
+
+.xp-pill-top .pill-xp {
+    color: var(--dim);
 }
 
 .xp-pill-top .pill-divider {
@@ -230,27 +256,100 @@
     background: var(--border2);
 }
 
-.xp-pill-top .pill-xp {
+.quest-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.summary-tile {
+    background: var(--surface);
+    border: 0.062rem solid var(--border);
+    border-radius: 0.625rem;
+    padding: 1.25rem;
+}
+
+.summary-label {
+    display: block;
+    color: var(--dim);
     font-family: var(--pixel);
     font-size: 0.438rem;
-    color: var(--dim);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
 }
 
-.breadcrumb {
+.summary-tile strong {
+    color: var(--text);
+    font-size: 1.75rem;
+    font-weight: 900;
+}
+
+.quest-toolbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.quest-tabs {
+    display: flex;
     gap: 0.5rem;
-    font-size: 0.812rem;
+    flex-wrap: wrap;
+}
+
+.quest-tab {
+    background: var(--surface);
+    border: 0.062rem solid var(--border);
+    border-radius: 0.5rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.625rem 0.875rem;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.quest-tab:hover,
+.quest-tab.active {
+    background: rgba(20, 184, 166, 0.13);
+    border-color: rgba(94, 234, 212, 0.35);
+    color: var(--glow);
+}
+
+.search-box {
+    align-items: center;
+    background: var(--surface);
+    border: 0.062rem solid var(--border);
+    border-radius: 0.5rem;
+    color: var(--dim);
+    display: flex;
+    gap: 0.625rem;
+    min-width: 16rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.search-box input {
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.875rem;
     font-weight: 700;
+    outline: 0;
+    width: 100%;
+}
+
+.search-box input::placeholder {
     color: var(--dim);
 }
 
-.section {
+.quest-list-section {
     background: var(--surface);
     border: 0.062rem solid var(--border);
     border-radius: 0.75rem;
     overflow: hidden;
-    margin-bottom: 1.25rem;
 }
 
 .section-header {
@@ -268,194 +367,155 @@
     letter-spacing: 0.06em;
 }
 
-.section-body {
-    padding: 1.25rem;
-}
-
 .sec-link {
-    font-size: 0.75rem;
-    font-weight: 700;
     color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 800;
     text-decoration: none;
-    transition: color 0.15s;
 }
 
 .sec-link:hover {
     color: var(--glow);
 }
 
-.active-quest {
-    background: var(--surface);
+.quest-list {
+    display: grid;
+    gap: 0.875rem;
+    padding: 1.25rem;
+}
+
+.my-quest-card {
+    background: var(--surface2);
     border: 0.062rem solid var(--border);
-    border-radius: 0.625rem;
+    border-radius: 0.875rem;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     padding: 1.5rem;
     position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
-    cursor: pointer;
-    margin-bottom: 0.750rem;
+    transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.active-quest::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 0.188rem;
-    background: linear-gradient(90deg, var(--primary), var(--spark));
-}
-
-.active-quest:hover {
+.my-quest-card:hover {
+    background: rgba(45, 55, 72, 0.4);
     transform: translateY(-0.125rem);
-    border-color: var(--border2);
 }
 
-.aq-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 0.625rem;
-}
-
-.aq-title {
-    font-size: 0.938rem;
-    font-weight: 800;
-    color: var(--text);
-    flex: 1;
-    padding-right: 0.75rem;
-}
-
-.aq-xp {
-    font-family: var(--pixel);
-    font-size: 0.438rem;
-    background: var(--surface2);
-    border: 0.062rem solid var(--border2);
-    color: var(--glow);
-    padding: 0.312rem 0.5rem;
-    border-radius: 0.25rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.aq-meta {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.aq-meta-item {
-    font-size: 0.688rem;
-    font-weight: 700;
-    color: var(--dim);
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.aq-bar-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.312rem;
-}
-
-.aq-bar-label span {
-    font-family: var(--pixel);
-    font-size: 0.438rem;
-    color: var(--dim);
-}
-
-.aq-bar-label span:last-child {
-    color: var(--glow);
-}
-
-.aq-track {
-    background: var(--bg);
-    height: 0.375rem;
-    border-radius: 0.188rem;
-    overflow: hidden;
-    margin-bottom: 0.875rem;
-}
-
-.aq-fill {
-    height: 100%;
-    border-radius: 0.188rem;
-    background: linear-gradient(90deg, var(--primary), var(--spark));
-}
-
-.aq-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.feed-item {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.875rem 0;
-    border-bottom: 0.062rem solid var(--border);
-    align-items: flex-start;
-}
-
-.feed-item:last-child {
-    border-bottom: none;
-}
-
-.feed-avatar {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 0.5rem;
-    background: var(--surface2);
-    border: 0.062rem solid var(--border2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.feed-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.feed-text {
-    font-size: 0.812rem;
-    color: var(--muted);
-    font-weight: 600;
-    line-height: 1.5;
-    margin-bottom: 0.25rem;
-}
-
-.feed-text strong {
-    color: var(--text);
-    font-weight: 800;
-}
-
-.feed-text .quest-name {
-    color: var(--glow);
-    font-weight: 700;
-}
-
-.feed-empty {
-    color: var(--dim);
-    font-size: 0.812rem;
-    font-weight: 700;
-    padding: 0.875rem 0.25rem;
-    text-align: center;
-}
-
-.btn-sm-primary {
+.my-quest-card::before {
     background: var(--primary);
+    border-radius: 0.875rem 0 0 0.875rem;
+    content: '';
+    inset: 0 auto 0 0;
+    position: absolute;
+    width: 0.25rem;
+}
+
+.my-quest-card.completed::before {
+    background: var(--green);
+}
+
+.quest-emoji {
+    align-items: center;
+    background: var(--surface3);
+    border: 0.062rem solid var(--border2);
+    border-radius: 0.75rem;
+    display: flex;
+    font-size: 1.75rem;
+    height: 3.75rem;
+    justify-content: center;
+    width: 3.75rem;
+}
+
+.quest-title-row {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.quest-title {
     color: var(--text);
+    font-size: 1.125rem;
+    font-weight: 900;
+}
+
+.quest-desc {
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.quest-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.quest-badge,
+.quest-status,
+.quest-xp {
+    border-radius: 0.375rem;
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 0.25rem 0.5rem;
+    text-transform: uppercase;
+}
+
+.quest-badge {
+    border: 0.062rem solid var(--border);
+    color: var(--muted);
+}
+
+.quest-status {
+    background: rgba(20, 184, 166, 0.13);
+    border: 0.062rem solid rgba(94, 234, 212, 0.25);
+    color: var(--glow);
+    white-space: nowrap;
+}
+
+.quest-status.completed {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.25);
+    color: var(--green);
+}
+
+.quest-xp {
+    background: var(--bg);
+    border: 0.062rem solid var(--border2);
+    color: var(--glow);
+    font-family: var(--pixel);
+    font-size: 0.438rem;
+    white-space: nowrap;
+}
+
+.quest-actions {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    justify-content: space-between;
+}
+
+.btn-sm-primary,
+.btn-sm-ghost {
+    border-radius: 0.375rem;
+    cursor: pointer;
     font-family: var(--body);
     font-size: 0.75rem;
     font-weight: 800;
     padding: 0.5rem 1rem;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.btn-sm-primary {
+    background: var(--primary);
     border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    color: var(--text);
 }
 
 .btn-sm-primary:hover {
@@ -463,23 +523,10 @@
     transform: translateY(-0.062rem);
 }
 
-.btn-sm-primary:disabled {
-    cursor: default;
-    opacity: 0.65;
-    transform: none;
-}
-
 .btn-sm-ghost {
     background: transparent;
-    color: var(--muted);
-    font-family: var(--body);
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
     border: 0.062rem solid var(--border2);
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    color: var(--muted);
 }
 
 .btn-sm-ghost:hover {
@@ -487,90 +534,60 @@
     color: var(--text);
 }
 
-.topbar-greeting h1 {
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: var(--text);
-    line-height: 1.1;
-}
-
-.topbar-greeting h1 span {
-    color: var(--glow);
-}
-
-.topbar-greeting p {
-    font-size: 0.75rem;
+.quest-empty {
     color: var(--dim);
-    font-weight: 700;
-    margin-top: 0.125rem;
-    font-family: var(--pixel);
-}
-.dc-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-bottom: 1rem;
-}
-
-.dc-badge {
-    border: 0.062rem solid var(--border);
-    border-radius: 0.375rem;
-    color: var(--muted);
-    font-size: 0.625rem;
+    font-size: 0.875rem;
     font-weight: 800;
-    padding: 0.188rem 0.5rem;
-    text-transform: uppercase;
+    padding: 2rem 1rem;
+    text-align: center;
 }
 
-@media (max-width: 48.000rem) {
-    .topbar-greeting h1 {
-        font-size: 1.125rem;
-    }
-
-    .topbar-greeting p {
-        font-size: 0.625rem;
-    }
-
-    .topbar-right {
-        gap: 0.5rem;
-    }
-
-    .xp-pill-top {
-        padding: 0.375rem 0.625rem;
-    }
-
-    .active-quest {
-        padding: 1rem;
-    }
-
-    .aq-actions {
+@media (max-width: 53.750rem) {
+    .quest-toolbar {
+        align-items: stretch;
         flex-direction: column;
     }
 
-    .aq-actions button {
+    .search-box {
+        min-width: 0;
         width: 100%;
     }
 
-    .feed-item {
-        flex-wrap: wrap;
+    .my-quest-card {
+        grid-template-columns: auto minmax(0, 1fr);
     }
 
-    .feed-content {
-        order: 1;
-        width: calc(100% - 3rem);
+    .quest-actions {
+        align-items: stretch;
+        flex-direction: row;
+        grid-column: 1 / -1;
     }
 
-    .accept-quest-invite-btn {
-        order: 2;
+    .quest-actions a {
+        text-align: center;
         width: 100%;
-        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 48.000rem) {
+    .quest-summary {
+        grid-template-columns: 1fr;
     }
 
     .topbar-right .xp-pill-top {
-        display: none; /* Hide XP pill on small mobile to save space */
+        display: none;
     }
 }
-@media (max-width: 30.000rem) {
+
+@media (max-width: 32.500rem) {
+    .quest-title-row {
+        flex-direction: column;
+    }
+
+    .quest-actions {
+        flex-direction: column;
+    }
+
     .topbar-greeting p {
         display: none;
     }

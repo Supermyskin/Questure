@@ -224,7 +224,7 @@ function createQuestCard(quest, photoCount) {
     const card = `
         <div class="active-quest" data-id="${escapeHTML(quest.questID)}">
             <div class="aq-top">
-                <div class="aq-title">${escapeHTML(quest.title)}</div>
+                <div class="aq-title">${escapeHTML(quest.emoji)} ${escapeHTML(quest.title)}</div>
                 <span class="aq-xp">+${Number(quest.baseXP) || 0} XP</span>
             </div>
             <div class="dc-badges">

@@ -439,7 +439,7 @@
     font-size: 1.75rem;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 47.500rem) {
     .topbar,
     .gallery-toolbar {
         align-items: flex-start;
