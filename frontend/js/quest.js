@@ -300,7 +300,7 @@ function renderInvitePanel() {
 
     if (pendingInviteCount > 0) {
         const pending = document.createElement('div');
-        pending.className = 'list-empty';
+        pending.className = 'list-empty invite-copy';
         pending.textContent = `${pendingInviteCount} pending invite${pendingInviteCount === 1 ? '' : 's'}.`;
         inviteList.appendChild(pending);
     }
