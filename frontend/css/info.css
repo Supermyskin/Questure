@@ -1,0 +1,258 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #1a1f26;
+    font-family: system-ui, sans-serif;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #e2e8f0;
+    padding: 1rem;
+}
+
+
+h1, h2, h3 {
+    font-weight:bold;
+}
+
+#header h1{
+    color: #14b8a6;
+    text-align: center;
+    font-size: 2.5rem;
+    margin: 1rem 0;
+}
+
+h2 {
+    color: #f1f5f9;
+    font-size: 1.8rem;
+    border-left: 0.312rem solid #14b8a6;
+    padding-left: 1rem;
+    margin: 1.5rem 0 1rem;
+}
+
+h3 {
+    color: #cbd5e1;
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+}
+
+a {
+    color: #14b8a6;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #2dd4bf;
+    text-decoration: underline;
+}
+
+#return-link {
+    display: inline-block;
+    background-color: #2d3642;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    border: 0.062rem solid #3b4452;
+}
+
+#return-link:hover {
+    background-color: #14b8a6;
+    color: #1a1f26;
+    text-decoration: none;
+}
+
+#leaderboard-link {
+    display: inline-block;
+    background-color: #2d3642;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;         
+    border: 0.062rem solid #3b4452;
+    color: #e2e8f0;            
+    text-decoration: none;
+}
+
+#leaderboard-link:hover {
+    background-color: #14b8a6;
+    color: #1a1f26;
+    text-decoration: none;
+}
+
+#guide {
+    max-width: 85%;
+    margin-right: 11%;
+    padding: 0 1rem 2rem 0;
+}
+
+
+#page-nav {
+    background-color: rgba(45, 54, 66, 0.95);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 0.5rem;
+    position: fixed;
+    right: 1rem;
+    top: 5rem;
+    bottom: 5rem;
+    width: 10%;
+    min-width: 7.500rem;
+    border-radius: 1.5rem;
+    border: 0.062rem solid #3b4452;
+    overflow-y: auto;
+}
+
+#page-nav a {
+    color: #cbd5e6;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 0.6rem;
+    text-align: center;
+    border-radius: 0.75rem;
+}
+
+#page-nav a:hover {
+    background-color: #14b8a6;
+    color: #0f172a;
+}
+
+.card {
+    background-color: #0f172a;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 0.062rem solid #2d3748;
+}
+
+.section-content {
+    color: #e2e8f0;
+}
+
+ul, ol {
+    margin: 0.75rem 0 1rem 1.8rem;
+}
+
+li {
+    margin: 0.3rem 0;
+}
+
+
+.rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    background-color: #1e293b;
+    border-radius: 1rem;
+}
+
+.rank-table th,
+.rank-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 0.062rem solid #334155;
+}
+
+.rank-table th {
+    background-color: #14b8a6;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.rank-table tr:hover td {
+    background-color: #2d3a4e;
+}
+
+
+.image {
+    max-width: 90%;
+    height: auto;
+    border: 0.125rem solid #334155;
+    border-radius: 1rem;
+    display: block;
+    margin: 1rem auto;
+}
+
+
+#site-footer {
+    background-color: #0f172a;
+    border-top: 0.062rem solid #2d3748;
+    border-radius: 2rem 2rem 0 0;
+    padding: 2rem 1rem 1.5rem;
+    margin-top: 3rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 75.000rem;
+    margin: 0 auto;
+}
+
+.footer-info,
+.footer-links a {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-links a:hover {
+    color: #14b8a6;
+}
+
+.footer-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+}
+
+.footer-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #1e293b;
+    padding: 0.4rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    color: #cbd5e6;
+}
+
+.footer-social a:hover {
+    background-color: #14b8a6;
+    color: #0f172a;
+}
+
+.footer-social .image {
+    width: 1.500rem;
+    height: auto;
+    margin: 0;
+    border: none;
+}
+
+.section-content p em {
+    background-color: #1e293b;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.5rem;
+    font-style: normal;
+    font-weight: 500;
+    color: #14b8a6;
+}
