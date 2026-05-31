@@ -342,7 +342,124 @@
     box-shadow: 0 0 0 0.188rem rgba(20, 184, 166, 0.12);
 }
 
+#update-btn {
+    width: 2.375rem;
+    height: 2.375rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--primary);
+    color: var(--bg);
+    font-size: 0.938rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
 
+#update-btn:hover {
+    background: var(--glow);
+    transform: translateY(-0.062rem);
+}
+
+.friends-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.812rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.friends-filter input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--primary);
+}
+
+.leaderboard-container {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem;
+}
+
+.player-card {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    background: var(--surface2);
+    border: 0.062rem solid var(--border);
+    border-radius: 0.625rem;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.player-card:hover {
+    background: var(--surface3);
+    border-color: var(--border2);
+    transform: translateY(-0.062rem);
+}
+
+.player-card.current-player {
+    border-color: rgba(94, 234, 212, 0.75);
+    box-shadow: 0 0 0 0.188rem rgba(20, 184, 166, 0.12);
+}
+
+.player-rank {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    background: var(--surface3);
+    border: 0.062rem solid var(--border2);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--pixel);
+    font-size: 0.5rem;
+    flex-shrink: 0;
+}
+
+.player-rank.gold {
+    background: rgba(245, 158, 11, 0.16);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: var(--amber);
+}
+
+.player-rank.silver {
+    background: rgba(148, 163, 184, 0.16);
+    border-color: rgba(148, 163, 184, 0.45);
+    color: var(--text);
+}
+
+.player-rank.bronze {
+    background: rgba(251, 146, 60, 0.16);
+    border-color: rgba(251, 146, 60, 0.45);
+    color: var(--orange);
+}
+
+.player-name {
+    min-width: 0;
+    color: var(--text);
+    font-size: 0.938rem;
+    font-weight: 900;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.player-xp {
+    color: var(--glow);
+    font-family: var(--pixel);
+    font-size: 0.5rem;
+    justify-self: end;
+    white-space: nowrap;
+}
+
+.separator {
+    height: 0.062rem;
+    background: var(--border);
+    margin: 0.25rem 0;
+}
 
 .no-results {
     padding: 1.25rem;
