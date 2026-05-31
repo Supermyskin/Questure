@@ -4,35 +4,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questure Leaderboard</title>
+    <title>Questure - Leaderboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
     <link rel="stylesheet" href="../css/leaderboard.css">
+    <script src="https://kit.fontawesome.com/1424a6b21b.js" crossorigin="anonymous"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="../js/shared.js"></script>
+    <link rel="icon" href="../favicon.png">
 </head>
 
 <body>
-    <header class="page-header">
-        <div>
-            <h1>Questure Leaderboard</h1>
-            <p>See the top players ranked by XP.</p>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-text">Questure</span>
+                <span class="logo-sub">Side quests worth doing</span>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <span class="nav-section-label">// MAIN</span>
+                <a href="./home.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Home
+                </a>
+                <a href="./discover.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> Discover
+                </a>
+                <a href="./my-quests.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-bolt"></i></span> My Quests
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-map"></i></span> Map View
+                </a>
+
+                <span class="nav-section-label">// SOCIAL</span>
+                <a href="./friends.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span> Friends
+                </a>
+                <a href="./leaderboard.html" class="nav-item active">
+                    <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span> Leaderboard
+                </a>
+                <a href="./gallery.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-camera"></i></span> Gallery
+                </a>
+
+                <span class="nav-section-label">// YOU</span>
+                <a href="./profile.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile
+                </a>
+                <a href="./profile.html" class="nav-item">
+                    <span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="profile-row">
+                    <div class="profile-avatar" id="profile-emoji">?</div>
+                    <div class="profile-info">
+                        <div id="profile-name" class="profile-name">User</div>
+                        <div class="profile-rank" id="profile-rank">Offline</div>
+                    </div>
+                    <span class="profile-cog"><i class="fa-solid fa-gear"></i></span>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main">
+            <header class="topbar">
+                <div class="topbar-greeting">
+                    <h1>Questure <span>Leaderboard</span></h1>
+                    <p>// ranked by XP</p>
+                </div>
+                <div class="topbar-right">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="notif-btn">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-dot" hidden></span>
+                    </div>
+                    <div class="xp-pill-top">
+                        <span class="pill-level" id="pill-level">LV.0</span>
+                        <div class="pill-divider"></div>
+                        <span class="pill-xp" id="pill-xp">0 XP</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content">
+                <section class="leaderboard-panel">
+                    <div class="leaderboard-hero">
+                        <div class="hero-icon">
+                            <i class="fa-solid fa-ranking-star"></i>
+                        </div>
+                        <div>
+                            <span class="section-title-pixel">// TOP PLAYERS</span>
+                            <h2>XP rankings</h2>
+                            <p>Compare your progress with the most active questers.</p>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <label class="count-control" for="top-count">
+                            <span>Show top</span>
+                            <input id="top-count" type="number" min="1" max="100" value="5">
+                        </label>
+                        <button id="update-btn" type="button" title="Update leaderboard"
+                            aria-label="Update leaderboard">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <label for="friends-only" class="friends-filter">
+                            <input type="checkbox" id="friends-only">
+                            <span>Friends only</span>
+                        </label>
+                    </div>
+
+                    <div class="leaderboard-container" id="leaderboardContainer">
+                        <div class="no-results">Loading leaderboard...</div>
+                    </div>
+                </section>
+            </main>
         </div>
-        <a class="return-link" href="./home.html">Return</a>
-    </header>
-
-    <main class="page-main">
-        <section class="control-panel">
-            <label for="top-count">Show top</label>
-            <input id="top-count" type="number" min="1" max="100" value="5">
-            <span>players</span>
-            <button id="update-btn">Update</button>
-            <label for="friends-only" class="friends-filter">
-                <input type="checkbox" id="friends-only">
-                Friends Only
-            </label>
-        </section>
-
-        <section class="leaderboard-container" id="leaderboardContainer">
-            <!-- Cards appear here -->
-        </section>
-    </main>
+    </div>
 
     <script src="../js/leaderboard.js"></script>
 </body>
