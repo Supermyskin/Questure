@@ -15,8 +15,8 @@ const thresholds = [
     { level: 10, xp: 12500 },
 ];
 
-// Hardcoded friend IDs (used when filtering by friends)
-const friendUserIds = ['u1', 'u2', 'u3', 'u5', 'u8'];
+let friendUserIds = new Set();
+let friendsLoaded = false;
 
 // Fallback player list (includes userId for client‑side filtering)
 const fallbackPlayers = [
@@ -97,6 +97,28 @@ async function fetchUserData() {
     }
 }
 
+async function loadFriendIds() {
+    if (friendsLoaded || !userID) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/friends?userID=${encodeURIComponent(userID)}`);
+        if (!response.ok) {
+            throw new Error(`Request failed with ${response.status}`);
+        }
+
+        const data = await response.json();
+        const friends = Array.isArray(data.friends) ? data.friends : [];
+        friendUserIds = new Set(friends.map((friend) => friend.userId).filter(Boolean));
+        friendsLoaded = true;
+    } catch (err) {
+        console.error('Error loading friends for leaderboard filter:', err);
+        friendUserIds = new Set();
+        friendsLoaded = true;
+    }
+}
+
 function showMessage(message) {
     container.innerHTML = '';
     const msg = document.createElement('div');
@@ -126,11 +148,9 @@ function filterByFriends(players) {
     if (!friendsOnlyCheckbox.checked) {
         return players;
     }
+
     return players.filter(function(player) {
-        if (player.userId) {
-            return friendUserIds.indexOf(player.userId) !== -1;
-        }
-        return friendUserIds.indexOf(player.name) !== -1;
+        return player.userId === userID || friendUserIds.has(player.userId);
     });
 }
 
@@ -193,9 +213,16 @@ async function loadLeaderboard() {
     showMessage('Loading leaderboard...');
 
     try {
+        if (friendsOnlyCheckbox.checked) {
+            await loadFriendIds();
+        }
+
         const params = new URLSearchParams({ limit: count });
         if (userID) {
             params.set('userID', userID);
+        }
+        if (friendsOnlyCheckbox.checked) {
+            params.set('friendsOnly', 'true');
         }
 
         const response = await fetch(`${API_URL}/leaderboard?${params.toString()}`);
@@ -206,7 +233,9 @@ async function loadLeaderboard() {
         const data = await response.json();
         let leaderboardPlayers = data.players || [];
 
-        leaderboardPlayers = filterByFriends(leaderboardPlayers);
+        if (!data.friendsOnlyApplied) {
+            leaderboardPlayers = filterByFriends(leaderboardPlayers);
+        }
 
         renderLeaderboard(leaderboardPlayers);
     } catch (err) {

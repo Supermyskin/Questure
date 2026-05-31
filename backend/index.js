@@ -399,23 +399,35 @@ app.get('/leaderboard', async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
     const userId = req.query.userID || req.query.userId;
+    const friendsOnly = ['true', '1', 'yes', 'on'].includes(String(req.query.friendsOnly || '').toLowerCase());
 
-    const [users, totalPlayers, currentUser] = await Promise.all([
-      User.find({})
+    const currentUser = userId
+      ? await User.findOne({ userId }).select('userId xp friends')
+      : null;
+    const friendScope = friendsOnly && currentUser
+      ? [currentUser.userId, ...(currentUser.friends || [])]
+      : null;
+    const leaderboardFilter = friendScope ? { userId: { $in: friendScope } } : {};
+
+    const [users, totalPlayers] = await Promise.all([
+      User.find(leaderboardFilter)
         .select('userId name emoji xp doneQuests activeQuests')
         .sort({ xp: -1, name: 1 })
         .limit(limit),
-      User.countDocuments({}),
-      userId ? User.findOne({ userId }).select('userId xp') : null
+      User.countDocuments(leaderboardFilter)
     ]);
 
     let currentUserRank = null;
     if (currentUser) {
-      const usersAhead = await User.countDocuments({ xp: { $gt: currentUser.xp || 0 } });
+      const usersAhead = await User.countDocuments({
+        ...leaderboardFilter,
+        xp: { $gt: currentUser.xp || 0 }
+      });
       currentUserRank = usersAhead + 1;
     }
 
     res.json({
+      friendsOnlyApplied: Boolean(friendScope),
       players: users.map((user, index) => ({
         rank: index + 1,
         userId: user.userId,
