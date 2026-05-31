@@ -1,5 +1,19 @@
 const API_URL = 'https://questure.onrender.com';
+const userName = localStorage.getItem('userName');
 const userID = localStorage.getItem('userID');
+
+const thresholds = [
+    { level: 1, xp: 0 },
+    { level: 2, xp: 250 },
+    { level: 3, xp: 600 },
+    { level: 4, xp: 1250 },
+    { level: 5, xp: 2250 },
+    { level: 6, xp: 3500 },
+    { level: 7, xp: 5000 },
+    { level: 8, xp: 7000 },
+    { level: 9, xp: 9500 },
+    { level: 10, xp: 12500 },
+];
 
 // Hardcoded friend IDs (used when filtering by friends)
 const friendUserIds = ['u1', 'u2', 'u3', 'u5', 'u8'];
@@ -22,6 +36,66 @@ const topCountInput = document.getElementById('top-count');
 const updateBtn = document.getElementById('update-btn');
 const friendsOnlyCheckbox = document.getElementById('friends-only');
 const container = document.getElementById('leaderboardContainer');
+
+function xpTitleLookup(xp) {
+    if (xp < 250) return 'Beginner';
+    if (xp < 600) return 'Newcomer';
+    if (xp < 1250) return 'Explorer';
+    if (xp < 2250) return 'Adventurer';
+    if (xp < 3500) return 'Regular';
+    if (xp < 5000) return 'Experienced';
+    if (xp < 7000) return 'Advanced';
+    if (xp < 9500) return 'Expert';
+    if (xp < 12500) return 'Veteran';
+    return 'Elite';
+}
+
+function xpToLevel(xp) {
+    const last = thresholds[thresholds.length - 1];
+
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+        if (xp >= thresholds[i].xp) {
+            if (i === thresholds.length - 1) {
+                const extraXp = xp - last.xp;
+                const extraLevels = Math.floor(extraXp / 4000);
+                return last.level + extraLevels;
+            }
+
+            return thresholds[i].level;
+        }
+    }
+
+    return 1;
+}
+
+function setText(id, text) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = text;
+}
+
+async function fetchUserData() {
+    if (!userID) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/fetch-user-info?userID=${encodeURIComponent(userID)}`);
+        if (!response.ok) {
+            throw new Error(`Request failed with ${response.status}`);
+        }
+
+        const user = await response.json();
+        const xp = Number(user.xp) || 0;
+
+        setText('profile-emoji', user.emoji || '?');
+        setText('profile-name', userName || user.name || 'User');
+        setText('profile-rank', xpTitleLookup(xp));
+        setText('pill-xp', `${xp.toLocaleString()} XP`);
+        setText('pill-level', `LV. ${xpToLevel(xp)}`);
+    } catch (err) {
+        console.error('Error fetching user data:', err);
+    }
+}
 
 function showMessage(message) {
     container.innerHTML = '';
@@ -147,4 +221,5 @@ updateBtn.addEventListener('click', loadLeaderboard);
 
 friendsOnlyCheckbox.addEventListener('change', loadLeaderboard);
 
+fetchUserData();
 loadLeaderboard();
