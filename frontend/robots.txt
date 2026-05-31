@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://questure-eight.vercel.app/sitemap.xml
